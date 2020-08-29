@@ -17,10 +17,10 @@
 #include <dirent.h>
 #include "domain.h"
 #include "utils.h"
+#include "proc.h"
 
 #define VAR_RUN_QEMU_PATH "/var/run/libvirt/qemu"
 #define PID_STRING_MAX 12
-#define BUF_SIZE 1024
 #define CGROUP_PATH_SIZE 30
 
 /* domain list operation */
@@ -112,6 +112,9 @@ static int set_domain(struct domain *dom, const char *name)
 
     dom->domain_id = get_id_from_cgroup(dom->pid);
     if (dom->domain_id < 0) {
+        return -1;
+    }
+    if (get_proc_stat(dom) < 0) {
         return -1;
     }
     return 1;

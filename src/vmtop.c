@@ -101,6 +101,14 @@ static void print_domain_field(struct domain *dom, int field)
         printw("%*lu", fields[i].align, dom->pid);
         break;
     }
+    case FD_STATE: {
+        printw("%*c", fields[i].align, dom->state);
+        break;
+    }
+    case FD_P: {
+        printw("%*d", fields[i].align, dom->processor);
+        break;
+    }
     default:
         break;
     }

@@ -20,6 +20,8 @@ enum fields_type {
     FD_VMNAME,
     FD_DID,
     FD_PID,
+    FD_STATE,
+    FD_P,
     FD_END
 };
 
