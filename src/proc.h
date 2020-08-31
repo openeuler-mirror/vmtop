@@ -49,4 +49,5 @@ GET_VALUE(sched)
 
 int get_proc_stat(struct domain *dom);
 void refresh_delta_stat(struct domain *new, struct domain *old);
+int get_proc_comm(struct domain *dom);
 #endif

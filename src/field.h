@@ -17,8 +17,8 @@
 #define FIELDS_HIDDEN 0
 
 enum fields_type {
-    FD_VMNAME,
     FD_DID,
+    FD_VMNAME,
     FD_PID,
     FD_CPU,
     FD_STATE,

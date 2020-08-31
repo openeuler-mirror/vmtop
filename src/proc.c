@@ -75,8 +75,15 @@ int get_proc_stat(struct domain *dom)
     char *p_next = NULL;
     int i = 0;
 
-    if (snprintf(path, STAT_PATH_SIZE, "/proc/%lu/stat", dom->pid) < 0) {
-        return -1;
+    if (dom->type == ISDOMAIN) {
+        if (snprintf(path, STAT_PATH_SIZE, "/proc/%lu/stat", dom->pid) < 0) {
+            return -1;
+        }
+    } else {
+         if (snprintf(path, STAT_PATH_SIZE, "/proc/%lu/task/%lu/stat",
+                      dom->ppid, dom->pid) < 0) {
+            return -1;
+        }
     }
     if (read_file(buf, BUF_SIZE, path) < 0) {
         return -1;
@@ -103,4 +110,18 @@ void refresh_delta_stat(struct domain *new, struct domain *old)
             (*proc_stab[i].delta_fun)(new, old);
         }
     }
+}
+
+int get_proc_comm(struct domain *dom)
+{
+    char path[STAT_PATH_SIZE];
+    int len;
+
+    if (snprintf(path, STAT_PATH_SIZE, "/proc/%lu/comm", dom->pid) < 0) {
+        return -1;
+    }
+
+    len = read_file(dom->vmname, DOMAIN_NAME_MAX, path);
+    dom->vmname[len - 1] = '\0';
+    return len;
 }

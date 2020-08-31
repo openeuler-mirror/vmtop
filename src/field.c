@@ -23,10 +23,10 @@ const char *filter_help = ""
 
 FID fields[] = {
     /* name  .      flag     . align */
-    {"VMname", FIELDS_DISPLAY, 14 },
     {"DID",    FIELDS_DISPLAY, 5  },
+    {"VMname", FIELDS_DISPLAY, 14 },
     {"PID",    FIELDS_DISPLAY, 8  },
-    {"%CPU",   FIELDS_DISPLAY, 5  },
+    {"%CPU",   FIELDS_DISPLAY, 6  },
     {"S",      FIELDS_DISPLAY, 5  },
     {"P",      FIELDS_DISPLAY, 5  }
 };

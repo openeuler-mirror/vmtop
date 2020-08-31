@@ -35,6 +35,8 @@ static void init_screen(void)
     noecho();                 /* disable key echo while getch */
     cbreak();                 /* disable line buffer */
     curs_set(0);              /* set curse no display */
+    init_domains(&scr_cur);
+    init_domains(&scr_pre);
 }
 
 static void parse_args(int argc, char *argv[])
@@ -91,11 +93,15 @@ static void print_domain_field(struct domain *dom, int field)
 
     switch (i) {
     case FD_VMNAME: {
-        printw("%*s", fields[i].align, dom->vmname);
+        printw("%*.*s", fields[i].align, fields[i].align - 2, dom->vmname);
         break;
     }
     case FD_DID: {
-        printw("%*d", fields[i].align, dom->domain_id);
+        if (dom->type == ISDOMAIN) {
+            printw("%*d", fields[i].align, dom->domain_id);
+        } else {
+            printw("%*s", fields[i].align, "|_");
+        }
         break;
     }
     case FD_PID: {
@@ -123,6 +129,20 @@ static void print_domain_field(struct domain *dom, int field)
     return;
 }
 
+static void show_domains_threads(struct domain *dom)
+{
+    for (int i = 0; i < dom->nlwp; i++) {
+        struct domain *thread = &(dom->threads[i]);
+        if (thread == NULL) {
+            continue;
+        }
+        for (int j = 0; j < FD_END; j++) {
+            print_domain_field(thread, j);
+        }
+        printw("\n");
+    }
+}
+
 static void show_domains(struct domain_list *list)
 {
     for (int i = 0; i < list->num; i++) {
@@ -131,6 +151,7 @@ static void show_domains(struct domain_list *list)
             print_domain_field(dom, j);
         }
         printw("\n");
+        show_domains_threads(dom);
     }
     clrtobot();    /* clear to bottom to avoid image residue */
 }

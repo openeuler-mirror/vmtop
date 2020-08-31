@@ -56,6 +56,7 @@ struct file_item {
 };
 
 struct domain {
+    int type;
     int domain_id;
     char vmname[DOMAIN_NAME_MAX];
     pid_t pid;
@@ -97,5 +98,13 @@ struct domain {
         cutime,
         cstime,
         start_time;
+    struct domain *threads;
+};
+
+enum process_type {
+    ISDOMAIN,
+    ISVCPU,
+    ISTHREAD,
+    ISEND
 };
 #endif
