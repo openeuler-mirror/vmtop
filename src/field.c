@@ -26,6 +26,7 @@ FID fields[] = {
     {"VMname", FIELDS_DISPLAY, 14 },
     {"DID",    FIELDS_DISPLAY, 5  },
     {"PID",    FIELDS_DISPLAY, 8  },
+    {"%CPU",   FIELDS_DISPLAY, 5  },
     {"S",      FIELDS_DISPLAY, 5  },
     {"P",      FIELDS_DISPLAY, 5  }
 };

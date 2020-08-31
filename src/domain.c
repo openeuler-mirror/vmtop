@@ -48,9 +48,36 @@ static struct domain *add_domains(struct domain_list *list)
     return &(list->domains[list->num - 1]);
 }
 
+static void copy_domains(struct domain_list *now, struct domain_list *pre)
+{
+    if (pre->domains) {
+        free(pre->domains);
+    }
+    pre->num = now->num;
+    pre->domains = malloc(sizeof(struct domain) * pre->num);
+    if (pre->domains == NULL) {
+        pre->num = 0;
+        return;
+    }
+    memcpy(pre->domains, now->domains, sizeof(struct domain) * pre->num);
+}
+
 static void pop_domains(struct domain_list *list)
 {
     list->num--;
+}
+
+/*
+ * get domain from domain list
+ */
+static struct domain *get_domain_from_id(int id, struct domain_list *list)
+{
+    for (int i = 0; i < list->num; i++) {
+        if (list->domains[i].domain_id == id) {
+            return &(list->domains[i]);
+        }
+    }
+    return NULL;
 }
 
 static int get_id_from_cgroup(pid_t pid)
@@ -92,7 +119,7 @@ static int set_domain(struct domain *dom, const char *name)
     char path[PATH_MAX];
     char pid[PID_STRING_MAX];
     char *end = NULL;
-   
+
     if (len >= DOMAIN_NAME_MAX - 1) {
         return -1;
     }
@@ -160,12 +187,23 @@ static int get_qemu_id(struct domain_list *list)
     return list->num;
 }
 
-int refresh_domains(struct domain_list *list)
+int refresh_domains(struct domain_list *now, struct domain_list *pre)
 {
     int num;
 
-    init_domains(list);
-    num = get_qemu_id(list);
+    copy_domains(now, pre);    /* save last data int pre */
+    init_domains(now);
+    num = get_qemu_id(now);
+
+    for (int i = 0; i < now->num; i++) {
+        int id = now->domains[i].domain_id;
+        struct domain *old_domain = get_domain_from_id(id, pre);
+
+        if (old_domain == NULL) {
+            continue;
+        }
+        refresh_delta_stat(&(now->domains[i]), old_domain);
+    }
 
     return num;
 }

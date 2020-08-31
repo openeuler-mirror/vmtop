@@ -21,5 +21,5 @@ struct domain_list {
     int num;
 };
 
-int refresh_domains(struct domain_list *list);
+int refresh_domains(struct domain_list *now, struct domain_list *pre);
 #endif

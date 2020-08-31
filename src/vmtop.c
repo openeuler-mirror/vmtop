@@ -26,6 +26,7 @@
 int delay_time;
 int quit_flag;
 struct domain_list scr_cur;
+struct domain_list scr_pre;
 
 static void init_screen(void)
 {
@@ -99,6 +100,13 @@ static void print_domain_field(struct domain *dom, int field)
     }
     case FD_PID: {
         printw("%*lu", fields[i].align, dom->pid);
+        break;
+    }
+    case FD_CPU: {
+        u64 cpu_jeffies = dom->DELTA_VALUE(utime) + dom->DELTA_VALUE(stime);
+        double usage = (double)cpu_jeffies * 100 /
+                       sysconf(_SC_CLK_TCK) / delay_time;
+        printw("%*.1f", fields[i].align, usage);
         break;
     }
     case FD_STATE: {
@@ -228,7 +236,7 @@ int main(int argc, char *argv[])
     delay_time = 1;    /* default delay 1s between display*/
 
     do {
-        refresh_domains(&scr_cur);
+        refresh_domains(&scr_cur, &scr_pre);
 
         /* display frame make */
         move(0, 0);

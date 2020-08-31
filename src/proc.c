@@ -19,7 +19,8 @@
 #define STAT_PATH_SIZE 40
 
 struct file_item proc_stab[] = {
-#define GF(f)    (DFUN_T)GET_NAME(f)
+#define GDF(f)   (void *)GET_NAME(f), (void *)DELTA_NAME(f)
+#define GF(f)    (void *)GET_NAME(f), NULL
     {"%c", GF(state)},
     {"%d", GF(ppid)},
     {"%d", GF(pgrd)},
@@ -31,8 +32,8 @@ struct file_item proc_stab[] = {
     {"%lu", GF(cmin_flt)},
     {"%lu", GF(maj_flt)},
     {"%lu", GF(cmaj_flt)},
-    {"%llu", GF(utime)},
-    {"%llu", GF(stime)},
+    {"%llu", GDF(utime)},
+    {"%llu", GDF(stime)},
     {"%llu", GF(cutime)},
     {"%llu", GF(cstime)},
     {"%ld", GF(priority)},
@@ -48,18 +49,19 @@ struct file_item proc_stab[] = {
     {"%lu", GF(start_stack)},
     {"%lu", GF(kstk_esp)},
     {"%lu", GF(kstk_eip)},
-    {"%*s", NULL},    /* discard signal */
-    {"%*s", NULL},    /* discard blocked */
-    {"%*s", NULL},    /* discard sigignore */
-    {"%*s", NULL},    /* discard sigcatch */
+    {"%*s", NULL, NULL},    /* discard signal */
+    {"%*s", NULL, NULL},    /* discard blocked */
+    {"%*s", NULL, NULL},    /* discard sigignore */
+    {"%*s", NULL, NULL},    /* discard sigcatch */
     {"%lu", GF(wchan)},
-    {"%*u", NULL},    /* dsicard nswap */
-    {"%*u", NULL},    /* discard cnswap */
+    {"%*u", NULL, NULL},    /* dsicard nswap */
+    {"%*u", NULL, NULL},    /* discard cnswap */
     {"%d", GF(exit_signal)},
     {"%d", GF(processor)},
     {"%lu", GF(rtprio)},
     {"%lu", GF(sched)}
 #undef GF
+#undef GDF
 };
 
 const int stat_size = sizeof(proc_stab) / sizeof(struct file_item);
@@ -92,4 +94,13 @@ int get_proc_stat(struct domain *dom)
         ++i;
     }
     return 1;
+}
+
+void refresh_delta_stat(struct domain *new, struct domain *old)
+{
+    for (int i = 0; i < stat_size; i++) {
+        if (proc_stab[i].delta_fun) {
+            (*proc_stab[i].delta_fun)(new, old);
+        }
+    }
 }

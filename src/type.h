@@ -15,9 +15,6 @@
 
 #include <unistd.h>
 
-typedef void *(*DFUN_T)(const void *);
-typedef void *(DFUN_VOID_T)(void *, void *);
-
 typedef unsigned long long u64;
 
 #define DOMAIN_NAME_MAX 256
@@ -27,23 +24,35 @@ typedef unsigned long long u64;
 #define DFX_VALUE(v) v, DELTA_VALUE(v)
 
 #define GET_NAME(v) domain_get_ ## v
-#define GET_FUN(v)                                      \
+#define GET_VALUE(v)                                      \
     static inline void *GET_NAME(v)(struct domain *dom) \
     {                                                   \
         return (void *)(&(dom->v));                     \
     }
 
 #define GET_DELTA_NAME(v) domain_get_delta_ ## v
-#define GET_DELTA_FUN(v)                                      \
+#define GET_DELTA_VALUE(v)                                      \
     static inline void *GET_DELTA_NAME(v)(struct domain *dom) \
     {                                                         \
         return (void *)(&(dom->DELTA_VALUE(v)));              \
     }
 
+#define DELTA_NAME(v)  domain_delta_ ## v
+#define DELTA_FUN(v)                                     \
+    static inline void DELTA_NAME(v)(struct domain *new, \
+                                     struct domain *old) \
+    {                                                    \
+        new->DELTA_VALUE(v) = new->v - old->v;           \
+    }
+
+#define GET_DELTA_FUN(v) \
+    GET_VALUE(v)  \
+    DELTA_FUN(v)
+
 struct file_item {
     const char *format;
-    DFUN_T get_fun;
-    DFUN_T delta_fun;
+    void *(*get_fun)(void *);
+    void (*delta_fun)(void *, void *);
 };
 
 struct domain {
@@ -83,11 +92,10 @@ struct domain {
         sched,
         wchan;
     u64
-        utime,
-        stime,
+        DFX_VALUE(utime),
+        DFX_VALUE(stime),
         cutime,
         cstime,
         start_time;
 };
-
 #endif
