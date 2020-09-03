@@ -25,6 +25,9 @@
 
 int delay_time;
 int quit_flag;
+int scr_row_size;    /* screen height, and will refresh in every loop */
+int scr_col_size;    /* screen width, and will refresh in every loop */
+int showd_task;      /* the num that has been showd, include task be hidden */
 struct domain_list scr_cur;
 struct domain_list scr_pre;
 
@@ -74,10 +77,13 @@ static void summary(void)
 
 static void show_header(void)
 {
+    int showd_width = 0;
     attron(A_REVERSE);
     for (int i = 0; i < FD_END; i++) {
-        if (fields[i].display_flag == 1) {
+        if (fields[i].display_flag == 1 &&
+            (showd_width + fields[i].align) < scr_col_size) {
             printw("%*s", fields[i].align, fields[i].name);
+            showd_width += fields[i].align;
         }
     }
     attroff(A_REVERSE);
@@ -172,13 +178,20 @@ static void print_domain_field(struct domain *dom, int field)
 
 static void show_task(struct domain *task)
 {
+    int showd_width = 0;    /* make show width do not beyond screen */
+    if (showd_task + 1 > scr_row_size - 4) {
+        return;
+    }
     clrtoeol();
     for (int i = 0; i < FD_END; i++) {
-        if (fields[i].display_flag == 1) {
+        if (fields[i].display_flag == 1 &&
+            (showd_width + fields[i].align) < scr_col_size) {
             print_domain_field(task, i);
+            showd_width += fields[i].align;
         }
     }
     printw("\n");
+    showd_task++;
 }
 
 static void show_domains_threads(struct domain *dom)
@@ -197,6 +210,7 @@ static void show_domains_threads(struct domain *dom)
 
 static void show_domains(struct domain_list *list)
 {
+    showd_task = 0;
     for (int i = 0; i < list->num; i++) {
         struct domain *dom = &(list->domains[i]);
         show_task(dom);
@@ -307,6 +321,8 @@ int main(int argc, char *argv[])
 
     do {
         refresh_domains(&scr_cur, &scr_pre);
+
+        getmaxyx(stdscr, scr_row_size, scr_col_size);
 
         /* display frame make */
         move(0, 0);
