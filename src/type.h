@@ -45,14 +45,24 @@ typedef unsigned long long u64;
         new->DELTA_VALUE(v) = new->v - old->v;           \
     }
 
+#define SUM_NAME(v) domain_sum_ ## v
+#define SUM_FUN(v)                                        \
+    static inline void SUM_NAME(v)(struct domain *dom,    \
+                                   struct domain *thread) \
+    {                                                     \
+        dom->DELTA_VALUE(v) += thread->DELTA_VALUE(v);    \
+    }
+
 #define GET_DELTA_FUN(v) \
     GET_VALUE(v)  \
-    DELTA_FUN(v)
+    DELTA_FUN(v)  \
+    SUM_FUN(v)
 
 struct file_item {
     const char *format;
     void *(*get_fun)(void *);
     void (*delta_fun)(void *, void *);
+    void (*sum_fun)(void *, void *);
 };
 
 struct domain {
@@ -98,6 +108,34 @@ struct domain {
         cutime,
         cstime,
         start_time;
+    /* vcpu_stat items */
+    u64
+        DFX_VALUE(hvc_exit_stat),
+        DFX_VALUE(wfe_exit_stat),
+        DFX_VALUE(wfi_exit_stat),
+        DFX_VALUE(mmio_exit_user),
+        DFX_VALUE(mmio_exit_kernel),
+        DFX_VALUE(exits),
+        DFX_VALUE(fp_asimd_exit_stat),
+        DFX_VALUE(irq_exit_stat),
+        DFX_VALUE(sys64_exit_stat),
+        DFX_VALUE(mabt_exit_stat),
+        DFX_VALUE(fail_entry_exit_stat),
+        DFX_VALUE(internal_error_exit_stat),
+        DFX_VALUE(unknown_ec_exit_stat),
+        DFX_VALUE(cp15_32_exit_stat),
+        DFX_VALUE(cp15_64_exit_stat),
+        DFX_VALUE(cp14_mr_exit_stat),
+        DFX_VALUE(cp14_ls_exit_stat),
+        DFX_VALUE(cp14_64_exit_stat),
+        DFX_VALUE(smc_exit_stat),
+        DFX_VALUE(sve_exit_stat),
+        DFX_VALUE(debug_exit_stat),
+        DFX_VALUE(steal),
+        st_max,
+        DFX_VALUE(vcpu_utime),
+        DFX_VALUE(vcpu_stime),
+        DFX_VALUE(gtime);
     struct domain *threads;
 };
 

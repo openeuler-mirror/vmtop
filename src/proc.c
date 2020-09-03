@@ -19,8 +19,8 @@
 #define STAT_PATH_SIZE 40
 
 struct file_item proc_stab[] = {
-#define GDF(f)   (void *)GET_NAME(f), (void *)DELTA_NAME(f)
-#define GF(f)    (void *)GET_NAME(f), NULL
+#define GDF(f)   (void *)GET_NAME(f), (void *)DELTA_NAME(f), NULL
+#define GF(f)    (void *)GET_NAME(f), NULL, NULL
     {"%c", GF(state)},
     {"%d", GF(ppid)},
     {"%d", GF(pgrd)},
@@ -49,13 +49,13 @@ struct file_item proc_stab[] = {
     {"%lu", GF(start_stack)},
     {"%lu", GF(kstk_esp)},
     {"%lu", GF(kstk_eip)},
-    {"%*s", NULL, NULL},    /* discard signal */
-    {"%*s", NULL, NULL},    /* discard blocked */
-    {"%*s", NULL, NULL},    /* discard sigignore */
-    {"%*s", NULL, NULL},    /* discard sigcatch */
+    {"%*s", NULL, NULL, NULL},    /* discard signal */
+    {"%*s", NULL, NULL, NULL},    /* discard blocked */
+    {"%*s", NULL, NULL, NULL},    /* discard sigignore */
+    {"%*s", NULL, NULL, NULL},    /* discard sigcatch */
     {"%lu", GF(wchan)},
-    {"%*u", NULL, NULL},    /* dsicard nswap */
-    {"%*u", NULL, NULL},    /* discard cnswap */
+    {"%*u", NULL, NULL, NULL},    /* dsicard nswap */
+    {"%*u", NULL, NULL, NULL},    /* discard cnswap */
     {"%d", GF(exit_signal)},
     {"%d", GF(processor)},
     {"%lu", GF(rtprio)},
