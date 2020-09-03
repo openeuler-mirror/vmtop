@@ -33,6 +33,9 @@ enum fields_type {
     FD_EXTSUM,
     FD_STATE,
     FD_P,
+    FD_ST,
+    FD_GUE,
+    FD_HYP,
     FD_END
 };
 
