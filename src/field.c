@@ -24,9 +24,19 @@ const char *filter_help = ""
 FID fields[] = {
     /* name  .      flag     . align */
     {"DID",    FIELDS_DISPLAY, 5  },
-    {"VMname", FIELDS_DISPLAY, 14 },
+    {"VM/task-name", FIELDS_DISPLAY, 14 },
     {"PID",    FIELDS_DISPLAY, 8  },
     {"%CPU",   FIELDS_DISPLAY, 6  },
+    {"EXThvc", FIELDS_DISPLAY, 10 },
+    {"EXTwfe", FIELDS_DISPLAY, 10 },
+    {"EXTwfi", FIELDS_DISPLAY, 10 },
+    {"EXTmmioU", FIELDS_DISPLAY, 10 },
+    {"EXTmmioK", FIELDS_DISPLAY, 10 },
+    {"EXTfp",  FIELDS_DISPLAY, 10 },
+    {"EXTirq", FIELDS_DISPLAY, 10 },
+    {"EXTsys64", FIELDS_DISPLAY, 10 },
+    {"EXTmabt", FIELDS_DISPLAY, 10 },
+    {"EXTsum", FIELDS_DISPLAY, 10 },
     {"S",      FIELDS_DISPLAY, 5  },
     {"P",      FIELDS_DISPLAY, 5  }
 };

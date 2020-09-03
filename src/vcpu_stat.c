@@ -21,7 +21,7 @@
 struct file_item vcpu_stat_stab[] = {
 #define GDF(f)  (void *)GET_NAME(f), (void *)DELTA_NAME(f), (void *)SUM_NAME(f)
 #define GF(f)   (void *)GET_NAME(f), NULL, NULL
-    {"%lu", GF(pid)},
+    {"%*u",  NULL, NULL, NULL},
     {"%llu", GDF(hvc_exit_stat)},
     {"%llu", GDF(wfe_exit_stat)},
     {"%llu", GDF(wfi_exit_stat)},
@@ -77,9 +77,9 @@ int get_vcpu_stat(struct domain *dom)
         }
         for (p = strtok_r(buf, " \t\r\n", &p_next); p && i < vcpu_stat_size;
              p = strtok_r(NULL, " \t\r\n", &p_next)) {
-            if (sscanf(p, vcpu_stat_stab[i].format,
-                (*vcpu_stat_stab[i].get_fun)(dom)) < 0) {
-                break;
+            if (vcpu_stat_stab[i].get_fun) {
+                sscanf(p, vcpu_stat_stab[i].format,
+                       (*vcpu_stat_stab[i].get_fun)(dom));
             }
             i++;
         }

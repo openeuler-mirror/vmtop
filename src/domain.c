@@ -287,7 +287,7 @@ static void refresh_threads(struct domain *dom, struct domain *old_dom)
         refresh_delta_stat(&(dom->threads[i]), old_thread);
         if (dom->threads[i].type == ISVCPU) {
             refresh_delta_vcpu_stat(&(dom->threads[i]), old_thread);
-            sum_vcpu_stat(&(dom->threads[i]), old_thread);
+            sum_vcpu_stat(dom, &(dom->threads[i]));
         }
     }
 }

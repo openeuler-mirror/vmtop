@@ -115,6 +115,47 @@ static void print_domain_field(struct domain *dom, int field)
         printw("%*.1f", fields[i].align, usage);
         break;
     }
+    /* kvm exit fields show */
+    case FD_EXTHVC: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(hvc_exit_stat));
+        break;
+    }
+    case FD_EXTWFE: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(wfe_exit_stat));
+        break;
+    }
+    case FD_EXTWFI: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(wfi_exit_stat));
+        break;
+    }
+    case FD_EXTMMIOU: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(mmio_exit_user));
+        break;
+    }
+    case FD_EXTMMIOK: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(mmio_exit_kernel));
+        break;
+    }
+    case FD_EXTFP: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(fp_asimd_exit_stat));
+        break;
+    }
+    case FD_EXTIRQ: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(irq_exit_stat));
+        break;
+    }
+    case FD_EXTSYS64: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(sys64_exit_stat));
+        break;
+    }
+    case FD_EXTMABT: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(mabt_exit_stat));
+        break;
+    }
+    case FD_EXTSUM: {
+        printw("%*llu", fields[i].align, dom->DELTA_VALUE(exits));
+        break;
+    }
     case FD_STATE: {
         printw("%*c", fields[i].align, dom->state);
         break;
@@ -129,17 +170,28 @@ static void print_domain_field(struct domain *dom, int field)
     return;
 }
 
+static void show_task(struct domain *task)
+{
+    clrtoeol();
+    for (int i = 0; i < FD_END; i++) {
+        if (fields[i].display_flag == 1) {
+            print_domain_field(task, i);
+        }
+    }
+    printw("\n");
+}
+
 static void show_domains_threads(struct domain *dom)
 {
+    if (!dom) {
+        return;
+    }
     for (int i = 0; i < dom->nlwp; i++) {
         struct domain *thread = &(dom->threads[i]);
         if (thread == NULL) {
             continue;
         }
-        for (int j = 0; j < FD_END; j++) {
-            print_domain_field(thread, j);
-        }
-        printw("\n");
+        show_task(thread);
     }
 }
 
@@ -147,10 +199,7 @@ static void show_domains(struct domain_list *list)
 {
     for (int i = 0; i < list->num; i++) {
         struct domain *dom = &(list->domains[i]);
-        for (int j = 0; j < FD_END; j++) {
-            print_domain_field(dom, j);
-        }
-        printw("\n");
+        show_task(dom);
         show_domains_threads(dom);
     }
     clrtobot();    /* clear to bottom to avoid image residue */
