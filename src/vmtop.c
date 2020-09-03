@@ -30,6 +30,7 @@ int scr_col_size;    /* screen width, and will refresh in every loop */
 int showd_task;      /* the num that has been showd, include task be hidden */
 int begin_task;
 int begin_field;
+unsigned int thread_mode;    /* decide whether to show threads */
 struct domain_list scr_cur;
 struct domain_list scr_pre;
 
@@ -44,12 +45,13 @@ static void init_screen(void)
     init_domains(&scr_pre);
     begin_task = 1;
     begin_field = 1;
+    thread_mode = 0;    /* default not to show threads */
 }
 
 static void parse_args(int argc, char *argv[])
 {
     int opt;
-    char *arg_ops = "d:";
+    char *arg_ops = "Hd:";
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
@@ -57,6 +59,10 @@ static void parse_args(int argc, char *argv[])
             if (delay_time < 1) {
                 delay_time = 1;
             }
+            break;
+        }
+        case 'H': {
+            thread_mode = 1;
             break;
         }
         default:
@@ -96,6 +102,7 @@ static void show_header(void)
     }
     attroff(A_REVERSE);
     printw("\n");
+    refresh();    /* refresh line to avoid last screen remains */
 }
 
 /*
@@ -244,7 +251,9 @@ static void show_domains(struct domain_list *list)
     for (int i = 0; i < list->num; i++) {
         struct domain *dom = &(list->domains[i]);
         show_task(dom);
-        show_domains_threads(dom);
+        if (thread_mode == 1) {
+            show_domains_threads(dom);
+        }
     }
     clrtobot();    /* clear to bottom to avoid image residue */
 }
@@ -334,7 +343,7 @@ static void parse_keys(int key)
         break;
     }
     case KEY_UP: {
-        int task_num = get_task_num(&scr_cur);
+        int task_num = thread_mode ? get_task_num(&scr_cur) : scr_cur.num;
 
         begin_task++;
         if (begin_task > task_num) {
@@ -364,6 +373,11 @@ static void parse_keys(int key)
         }
         break;
     }
+    case 'H': {
+        thread_mode = !thread_mode;
+        begin_task = 1;    /* mode change, so show from first task */
+        break;
+    }
     default:
         break;
     }
@@ -374,11 +388,10 @@ int main(int argc, char *argv[])
 {
     int key;
 
-    parse_args(argc, argv);
     init_screen();
-
     quit_flag = 0;
-    delay_time = 1;    /* default delay 1s between display*/
+    delay_time = 1;    /* default delay 1s between display */
+    parse_args(argc, argv);
 
     do {
         refresh_domains(&scr_cur, &scr_pre);
