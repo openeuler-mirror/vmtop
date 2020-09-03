@@ -46,4 +46,5 @@ extern FID fields[];
 extern const char *summary_text;
 extern const char *filter_help;
 
+int get_show_field_num(void);
 #endif

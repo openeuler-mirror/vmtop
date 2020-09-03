@@ -28,6 +28,8 @@ int quit_flag;
 int scr_row_size;    /* screen height, and will refresh in every loop */
 int scr_col_size;    /* screen width, and will refresh in every loop */
 int showd_task;      /* the num that has been showd, include task be hidden */
+int begin_task;
+int begin_field;
 struct domain_list scr_cur;
 struct domain_list scr_pre;
 
@@ -40,6 +42,8 @@ static void init_screen(void)
     curs_set(0);              /* set curse no display */
     init_domains(&scr_cur);
     init_domains(&scr_pre);
+    begin_task = 1;
+    begin_field = 1;
 }
 
 static void parse_args(int argc, char *argv[])
@@ -78,12 +82,16 @@ static void summary(void)
 static void show_header(void)
 {
     int showd_width = 0;
+    int showd_field = 0;
     attron(A_REVERSE);
     for (int i = 0; i < FD_END; i++) {
         if (fields[i].display_flag == 1 &&
-            (showd_width + fields[i].align) < scr_col_size) {
-            printw("%*s", fields[i].align, fields[i].name);
+            (i == FD_DID || i == FD_VMNAME || ++showd_field >= begin_field)) {
             showd_width += fields[i].align;
+            if (showd_width >= scr_col_size) {
+                break;
+            }
+            printw("%*s", fields[i].align, fields[i].name);
         }
     }
     attroff(A_REVERSE);
@@ -179,19 +187,24 @@ static void print_domain_field(struct domain *dom, int field)
 static void show_task(struct domain *task)
 {
     int showd_width = 0;    /* make show width do not beyond screen */
-    if (showd_task + 1 > scr_row_size - 4) {
+    int showd_field = 0;
+    showd_task++;
+    if (showd_task < begin_task ||
+        showd_task - begin_task > scr_row_size - 4) {
         return;
     }
     clrtoeol();
     for (int i = 0; i < FD_END; i++) {
         if (fields[i].display_flag == 1 &&
-            (showd_width + fields[i].align) < scr_col_size) {
-            print_domain_field(task, i);
+            (i == FD_DID || i == FD_VMNAME || ++showd_field >= begin_field)) {
             showd_width += fields[i].align;
+            if (showd_width >= scr_col_size) {
+                break;
+            }
+            print_domain_field(task, i);
         }
     }
     printw("\n");
-    showd_task++;
 }
 
 static void show_domains_threads(struct domain *dom)
@@ -301,6 +314,37 @@ static void parse_keys(int key)
     }
     case 'q': {
         quit_flag = !quit_flag;
+        break;
+    }
+    case KEY_UP: {
+        int task_num = get_task_num(&scr_cur);
+
+        begin_task++;
+        if (begin_task > task_num) {
+            begin_task = task_num;
+        }
+        break;
+    }
+    case KEY_DOWN: {
+        begin_task--;
+        if (begin_task < 1) {
+            begin_task = 1;
+        }
+        break;
+    }
+    case KEY_LEFT: {
+        begin_field--;
+        if (begin_field < 1) {
+            begin_field = 1;
+        }
+        break;
+    }
+    case KEY_RIGHT: {
+        int field_num = get_show_field_num();
+        begin_field++;
+        if (begin_field >= field_num) {
+            begin_field = field_num - 1;
+        }
         break;
     }
     default:

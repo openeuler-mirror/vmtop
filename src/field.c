@@ -40,3 +40,15 @@ FID fields[] = {
     {"S",      FIELDS_DISPLAY, 5  },
     {"P",      FIELDS_DISPLAY, 5  }
 };
+
+int get_show_field_num(void)
+{
+    int sum = 0;
+
+    for (int i = 0; i < FD_END; i++) {
+        if (fields[i].display_flag == 1) {
+            sum++;
+        }
+    }
+    return sum;
+}

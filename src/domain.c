@@ -313,3 +313,14 @@ int refresh_domains(struct domain_list *now, struct domain_list *pre)
 
     return num;
 }
+
+int get_task_num(struct domain_list *list)
+{
+    int sum = 0;
+
+    for (int i = 0; i < list->num; i++) {
+        sum += list->domains[i].nlwp;
+    }
+    sum += list->num;
+    return sum;
+}
