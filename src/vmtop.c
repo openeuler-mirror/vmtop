@@ -26,6 +26,7 @@
 int delay_time;
 int quit_flag;
 struct domain_list scr_cur;
+struct domain_list scr_pre;
 
 static void init_screen(void)
 {
@@ -34,6 +35,8 @@ static void init_screen(void)
     noecho();                 /* disable key echo while getch */
     cbreak();                 /* disable line buffer */
     curs_set(0);              /* set curse no display */
+    init_domains(&scr_cur);
+    init_domains(&scr_pre);
 }
 
 static void parse_args(int argc, char *argv[])
@@ -90,21 +93,54 @@ static void print_domain_field(struct domain *dom, int field)
 
     switch (i) {
     case FD_VMNAME: {
-        printw("%*s", fields[i].align, dom->vmname);
+        printw("%*.*s", fields[i].align, fields[i].align - 2, dom->vmname);
         break;
     }
     case FD_DID: {
-        printw("%*d", fields[i].align, dom->domain_id);
+        if (dom->type == ISDOMAIN) {
+            printw("%*d", fields[i].align, dom->domain_id);
+        } else {
+            printw("%*s", fields[i].align, "|_");
+        }
         break;
     }
     case FD_PID: {
         printw("%*lu", fields[i].align, dom->pid);
         break;
     }
+    case FD_CPU: {
+        u64 cpu_jeffies = dom->DELTA_VALUE(utime) + dom->DELTA_VALUE(stime);
+        double usage = (double)cpu_jeffies * 100 /
+                       sysconf(_SC_CLK_TCK) / delay_time;
+        printw("%*.1f", fields[i].align, usage);
+        break;
+    }
+    case FD_STATE: {
+        printw("%*c", fields[i].align, dom->state);
+        break;
+    }
+    case FD_P: {
+        printw("%*d", fields[i].align, dom->processor);
+        break;
+    }
     default:
         break;
     }
     return;
+}
+
+static void show_domains_threads(struct domain *dom)
+{
+    for (int i = 0; i < dom->nlwp; i++) {
+        struct domain *thread = &(dom->threads[i]);
+        if (thread == NULL) {
+            continue;
+        }
+        for (int j = 0; j < FD_END; j++) {
+            print_domain_field(thread, j);
+        }
+        printw("\n");
+    }
 }
 
 static void show_domains(struct domain_list *list)
@@ -115,6 +151,7 @@ static void show_domains(struct domain_list *list)
             print_domain_field(dom, j);
         }
         printw("\n");
+        show_domains_threads(dom);
     }
     clrtobot();    /* clear to bottom to avoid image residue */
 }
@@ -220,7 +257,7 @@ int main(int argc, char *argv[])
     delay_time = 1;    /* default delay 1s between display*/
 
     do {
-        refresh_domains(&scr_cur);
+        refresh_domains(&scr_cur, &scr_pre);
 
         /* display frame make */
         move(0, 0);

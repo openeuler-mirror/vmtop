@@ -17,20 +17,31 @@
 #include <dirent.h>
 #include "domain.h"
 #include "utils.h"
+#include "proc.h"
 
 #define VAR_RUN_QEMU_PATH "/var/run/libvirt/qemu"
 #define PID_STRING_MAX 12
-#define BUF_SIZE 1024
 #define CGROUP_PATH_SIZE 30
+#define TASK_STRING_SIZE 30
 
 /* domain list operation */
 void init_domains(struct domain_list *list)
 {
+    list->domains = NULL;
+    list->num = 0;
+}
+void clear_domains(struct domain_list *list)
+{
+    for (int i = 0; i < list->num; i++) {
+        if (list->domains[i].threads != NULL) {
+            free(list->domains[i].threads);
+            list->domains[i].threads = NULL;
+        }
+    }
     if (list->domains != NULL) {
         free(list->domains);
     }
-    list->domains = NULL;
-    list->num = 0;
+    init_domains(list);
 }
 
 static struct domain *add_domains(struct domain_list *list)
@@ -48,9 +59,53 @@ static struct domain *add_domains(struct domain_list *list)
     return &(list->domains[list->num - 1]);
 }
 
+static void copy_domains(struct domain_list *now, struct domain_list *pre)
+{
+    clear_domains(pre);
+    pre->num = now->num;
+    pre->domains = malloc(sizeof(struct domain) * pre->num);
+    if (pre->domains == NULL) {
+        pre->num = 0;
+        return;
+    }
+    memcpy(pre->domains, now->domains, sizeof(struct domain) * pre->num);
+    for (int i = 0; i < pre->num; i++) {
+        pre->domains[i].threads = malloc(sizeof(struct domain) *
+                                         pre->domains[i].nlwp);
+        if (pre->domains[i].threads == NULL) {
+            continue;
+        }
+        memcpy(pre->domains[i].threads, now->domains[i].threads,
+               sizeof(struct domain) * pre->domains[i].nlwp);
+    }
+}
+
 static void pop_domains(struct domain_list *list)
 {
     list->num--;
+}
+
+/*
+ * get domain from domain list
+ */
+static struct domain *get_domain_from_id(int id, struct domain_list *list)
+{
+    for (int i = 0; i < list->num; i++) {
+        if (list->domains != NULL && list->domains[i].domain_id == id) {
+            return &(list->domains[i]);
+        }
+    }
+    return NULL;
+}
+
+static struct domain *get_thread_from_pid(pid_t pid, struct domain *dom)
+{
+    for (int i = 0; i < dom->nlwp; i++) {
+        if (dom->threads != NULL && dom->threads[i].pid == pid) {
+            return &(dom->threads[i]);
+        }
+    }
+    return NULL;
 }
 
 static int get_id_from_cgroup(pid_t pid)
@@ -86,20 +141,66 @@ static int get_id_from_cgroup(pid_t pid)
     return id;
 }
 
+static int get_child_pid(struct domain *dom)
+{
+    char path[TASK_STRING_SIZE];
+    DIR *dirptr = NULL;
+    struct dirent *dirt = NULL;
+    char *end = NULL;
+    int i = 0;
+
+    if (snprintf(path, TASK_STRING_SIZE, "/proc/%lu/task", dom->pid) < 0) {
+        return -1;
+    }
+    dirptr = opendir(path);
+    if (dirptr == NULL) {
+        return -1;
+    }
+    dom->threads = (struct domain *)malloc(sizeof(struct domain) * dom->nlwp);
+    if (dom->threads == NULL) {
+        closedir(dirptr);
+        return -1;
+    }
+    memset(dom->threads, 0, sizeof(struct domain) * dom->nlwp);
+
+    while ((dirt = readdir(dirptr)) != NULL && i < dom->nlwp) {
+        if (!strcmp(dirt->d_name, ".") || !strcmp(dirt->d_name, "..")) {
+            continue;
+        }
+        if (dirt->d_type != DT_DIR) {
+            continue;
+        }
+        dom->threads[i].pid = strtoul(dirt->d_name, &end, 10);
+        if (end <= dirt->d_name || dom->threads[i].pid < 1) {
+            dom->threads[i].pid = 0;
+            continue;
+        }
+        dom->threads[i].type = ISTHREAD;
+        dom->threads[i].ppid = dom->pid;
+        if (get_proc_stat(&(dom->threads[i])) < 0 ||
+            get_proc_comm(&(dom->threads[i])) < 0) {
+            continue;
+        }
+        i++;
+    }
+    closedir(dirptr);
+    return dom->nlwp;
+}
+
 static int set_domain(struct domain *dom, const char *name)
 {
     int len = strlen(name);
-    char path[PATH_MAX];
+    char path[BUF_SIZE];
     char pid[PID_STRING_MAX];
     char *end = NULL;
-   
+
     if (len >= DOMAIN_NAME_MAX - 1) {
         return -1;
     }
     strcpy(dom->vmname, name);
     dom->vmname[len - strlen(".pid")] = '\0';
 
-    if (snprintf(path, PATH_MAX, "%s/%s", VAR_RUN_QEMU_PATH, name) < 0) {
+    if (snprintf(path, BUF_SIZE, "%s/%s", VAR_RUN_QEMU_PATH, name) < 0) {
         return -1;
     }
     if (read_file(pid, PID_STRING_MAX, path) < 0) {
@@ -112,6 +213,10 @@ static int set_domain(struct domain *dom, const char *name)
 
     dom->domain_id = get_id_from_cgroup(dom->pid);
     if (dom->domain_id < 0) {
+        return -1;
+    }
+    dom->type = ISDOMAIN;
+    if (get_proc_stat(dom) < 0 || get_child_pid(dom) < 0) {
         return -1;
     }
     return 1;
@@ -157,12 +262,36 @@ static int get_qemu_id(struct domain_list *list)
     return list->num;
 }
 
-int refresh_domains(struct domain_list *list)
+static void refresh_threads(struct domain *dom, struct domain *old_dom)
+{
+    for (int i = 0; i < dom->nlwp; i++) {
+        int pid = dom->threads[i].pid;
+        struct domain *old_thread = get_thread_from_pid(pid, old_dom);
+        if (old_thread == NULL) {
+            continue;
+        }
+        refresh_delta_stat(&(dom->threads[i]), old_thread);
+    }
+}
+
+int refresh_domains(struct domain_list *now, struct domain_list *pre)
 {
     int num;
 
-    init_domains(list);
-    num = get_qemu_id(list);
+    copy_domains(now, pre);    /* save last data int pre */
+    clear_domains(now);
+    num = get_qemu_id(now);
+
+    for (int i = 0; i < now->num; i++) {
+        int id = now->domains[i].domain_id;
+        struct domain *old_domain = get_domain_from_id(id, pre);
+
+        if (old_domain == NULL) {
+            continue;
+        }
+        refresh_delta_stat(&(now->domains[i]), old_domain);
+        refresh_threads(&(now->domains[i]), old_domain);
+    }
 
     return num;
 }

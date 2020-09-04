@@ -14,19 +14,13 @@
 #define SRC_DOMAIN_H
 
 #include <unistd.h>
-
-#define DOMAIN_NAME_MAX 256
-
-struct domain {
-    int domain_id;
-    char vmname[DOMAIN_NAME_MAX];
-    pid_t pid;
-};
+#include "type.h"
 
 struct domain_list {
     struct domain *domains;
     int num;
 };
 
-int refresh_domains(struct domain_list *list);
+int refresh_domains(struct domain_list *now, struct domain_list *pre);
+void init_domains(struct domain_list *list);
 #endif

@@ -38,7 +38,7 @@ int read_file(char *buf, int bufsize, const char *path)
         buf[len] = '\0';
     }
     close(fd);
-    return 1;
+    return len;
 }
 
 int get_time_str(char *buf, int bufsize)
