@@ -31,6 +31,7 @@ int showd_task;      /* the num that has been showd, include task be hidden */
 int begin_task;
 int begin_field;
 unsigned int thread_mode;    /* decide whether to show threads */
+int display_loop;
 struct domain_list scr_cur;
 struct domain_list scr_pre;
 
@@ -46,12 +47,15 @@ static void init_screen(void)
     begin_task = 1;
     begin_field = 1;
     thread_mode = 0;    /* default not to show threads */
+    quit_flag = 0;
+    delay_time = 1;    /* default delay 1s between display */
+    display_loop = -1;
 }
 
 static void parse_args(int argc, char *argv[])
 {
     int opt;
-    char *arg_ops = "Hd:";
+    char *arg_ops = "Hd:n:";
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
@@ -63,6 +67,13 @@ static void parse_args(int argc, char *argv[])
         }
         case 'H': {
             thread_mode = 1;
+            break;
+        }
+        case 'n': {
+            display_loop = atoi(optarg);
+            if (display_loop == 0) {
+                display_loop = -1;
+            }
             break;
         }
         default:
@@ -415,7 +426,10 @@ int main(int argc, char *argv[])
             parse_keys(key);
             clear();
         }
-    } while (!quit_flag);
+        if (display_loop > 0) {
+            display_loop--;
+        }
+    } while (!quit_flag && display_loop);
     endwin();    /* quit from curses mode */
     return 0;
 }
