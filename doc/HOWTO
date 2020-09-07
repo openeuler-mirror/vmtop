@@ -1,0 +1,41 @@
+1.How to add a display item for vmtop?
+Of course, the display item data get should have been realized. Then, you can add related display item to vmtop display through the following steps:
+ 1) Add a enum item in fields_type(field.h).
+    Take 'S' display item as example:
+    Add "FD_STATE" enum in fields_type
+    --------------------------------
+    enum fields_type {
+        FD_DID,
+        ...
+        FD_STATE,
+        FD_END
+    };
+    --------------------------------
+ 2) Add display setting in fields(field.c):
+    --------------------------------
+    FID fields[] = {
+        /* name  .      flag    . align */
+        {"DID",   FIELDS_DISPLAY, 5  },
+        ...
+        {"S",     FIELDS_DISPLAY, 5  }
+    };
+    --------------------------------
+ 3) Add relate print case in print_domain_field(vmtop.c):
+    --------------------------------
+    static void print_domain_field(struct domain *dom, int field)
+    {
+        int i = field;
+        switch (i) {
+        case FD_VMNAME: {
+    |       printw("%*.*s", fields[i].align, fields[i].align - 2, dom->vmname);
+    |       break;
+        }
+        ...
+        case FD_STATE: {
+    |       printw("%*c", fields[i].align, dom->state);
+    |       break;
+        }
+        ...
+    }
+    --------------------------------
+ 4) Make and run.
