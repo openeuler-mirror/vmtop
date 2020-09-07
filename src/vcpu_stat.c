@@ -60,7 +60,7 @@ int get_vcpu_stat(struct domain *dom)
     char pid[PID_STRING_SIZE];
     FILE *fp = NULL;
 
-    if (snprintf(pid, PID_STRING_SIZE, "%lu", dom->pid) < 0) {
+    if (snprintf(pid, PID_STRING_SIZE, "%u", dom->pid) < 0) {
         return -1;
     }
     fp = fopen(KVM_VCPU_STAT_PATH, "r");

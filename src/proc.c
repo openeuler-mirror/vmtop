@@ -76,11 +76,11 @@ int get_proc_stat(struct domain *dom)
     int i = 0;
 
     if (dom->type == ISDOMAIN) {
-        if (snprintf(path, STAT_PATH_SIZE, "/proc/%lu/stat", dom->pid) < 0) {
+        if (snprintf(path, STAT_PATH_SIZE, "/proc/%u/stat", dom->pid) < 0) {
             return -1;
         }
     } else {
-         if (snprintf(path, STAT_PATH_SIZE, "/proc/%lu/task/%lu/stat",
+         if (snprintf(path, STAT_PATH_SIZE, "/proc/%u/task/%u/stat",
                       dom->ppid, dom->pid) < 0) {
             return -1;
         }
@@ -117,11 +117,13 @@ int get_proc_comm(struct domain *dom)
     char path[STAT_PATH_SIZE];
     int len;
 
-    if (snprintf(path, STAT_PATH_SIZE, "/proc/%lu/comm", dom->pid) < 0) {
+    if (snprintf(path, STAT_PATH_SIZE, "/proc/%u/comm", dom->pid) < 0) {
         return -1;
     }
 
     len = read_file(dom->vmname, DOMAIN_NAME_MAX, path);
-    dom->vmname[len - 1] = '\0';
+    if (len > 1) {
+        dom->vmname[len - 1] = '\0';
+    }
     return len;
 }

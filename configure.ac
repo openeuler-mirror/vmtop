@@ -10,6 +10,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 AC_PROG_RANLIB
 AM_INIT_AUTOMAKE([subdir-objects])
+CC="$CC -std=gnu11"
 
 # Checks for libraries.
 AC_CHECK_LIB(ncurses, initscr, [], [echo "missing ncurses support!";exit -1])
@@ -25,6 +26,18 @@ AC_TYPE_PID_T
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([memset realpath strstr strtoul])
+
+# AC_ARGS_ENABLES
+AC_ARG_ENABLE([debug],
+  [AS_HELP_STRING([--enable-debug], [debug program(default is disable)])],
+  [CFLAGS="-g -O0"],
+  [CFLAGS="-g -O2"]
+)
+
+AC_ARG_ENABLE([secure-build],
+  [AS_HELP_STRING([--enable-secure-build], [build project with secure flags])],
+  [CFLAGS="${CFLAGS} -Wl,-z,relro,-z,now -fPIE -fPIC -pie -Werror -Wall -ftrapv -fstack-protector-all -D_FORTIFY_SOURCE=2 -O2"],[]
+)
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile])

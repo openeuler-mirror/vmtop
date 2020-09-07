@@ -276,7 +276,7 @@ static void print_field(int high_light)
 {
     int x = 3;    /* display x local */
     int y = 4;    /* display y local */
-    int attr_flag;
+    unsigned int attr_flag;
 
     for (int i = 0; i < FD_END; i++) {
         attr_flag = A_NORMAL;

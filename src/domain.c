@@ -123,7 +123,7 @@ static int get_id_from_cgroup(pid_t pid)
     char *tmp = NULL;
     int id = -1;
 
-    if (snprintf(path, CGROUP_PATH_SIZE, "/proc/%lu/cgroup", pid) < 0) {
+    if (snprintf(path, CGROUP_PATH_SIZE, "/proc/%u/cgroup", pid) < 0) {
         return id;
     }
     fp = fopen(path, "r");
@@ -156,7 +156,7 @@ static int get_child_pid(struct domain *dom)
     char *end = NULL;
     int i = 0;
 
-    if (snprintf(path, TASK_STRING_SIZE, "/proc/%lu/task", dom->pid) < 0) {
+    if (snprintf(path, TASK_STRING_SIZE, "/proc/%u/task", dom->pid) < 0) {
         return -1;
     }
     dirptr = opendir(path);
