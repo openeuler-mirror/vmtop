@@ -5,5 +5,7 @@ libdomain_a_SOURCES= \
 	domain.h \
 	proc.c \
 	proc.h \
+	vcpu_stat.c \
+	vcpu_stat.h \
 	utils.c \
 	utils.h

@@ -18,6 +18,7 @@
 #include "domain.h"
 #include "utils.h"
 #include "proc.h"
+#include "vcpu_stat.h"
 
 #define VAR_RUN_QEMU_PATH "/var/run/libvirt/qemu"
 #define PID_STRING_MAX 12
@@ -63,6 +64,9 @@ static void copy_domains(struct domain_list *now, struct domain_list *pre)
 {
     clear_domains(pre);
     pre->num = now->num;
+    if (pre->num <= 0) {
+        return;
+    }
     pre->domains = malloc(sizeof(struct domain) * pre->num);
     if (pre->domains == NULL) {
         pre->num = 0;
@@ -70,6 +74,9 @@ static void copy_domains(struct domain_list *now, struct domain_list *pre)
     }
     memcpy(pre->domains, now->domains, sizeof(struct domain) * pre->num);
     for (int i = 0; i < pre->num; i++) {
+        if (pre->domains[i].nlwp <= 0) {
+            continue;
+        }
         pre->domains[i].threads = malloc(sizeof(struct domain) *
                                          pre->domains[i].nlwp);
         if (pre->domains[i].threads == NULL) {
@@ -116,7 +123,7 @@ static int get_id_from_cgroup(pid_t pid)
     char *tmp = NULL;
     int id = -1;
 
-    if (snprintf(path, CGROUP_PATH_SIZE, "/proc/%lu/cgroup", pid) < 0) {
+    if (snprintf(path, CGROUP_PATH_SIZE, "/proc/%u/cgroup", pid) < 0) {
         return id;
     }
     fp = fopen(path, "r");
@@ -149,11 +156,14 @@ static int get_child_pid(struct domain *dom)
     char *end = NULL;
     int i = 0;
 
-    if (snprintf(path, TASK_STRING_SIZE, "/proc/%lu/task", dom->pid) < 0) {
+    if (snprintf(path, TASK_STRING_SIZE, "/proc/%u/task", dom->pid) < 0) {
         return -1;
     }
     dirptr = opendir(path);
     if (dirptr == NULL) {
+        return -1;
+    }
+    if (dom->nlwp <= 0) {
         return -1;
     }
     dom->threads = (struct domain *)malloc(sizeof(struct domain) * dom->nlwp);
@@ -180,6 +190,10 @@ static int get_child_pid(struct domain *dom)
         if (get_proc_stat(&(dom->threads[i])) < 0 ||
             get_proc_comm(&(dom->threads[i])) < 0) {
             continue;
+        }
+        if (strstr(dom->threads[i].vmname, "CPU") != NULL
+            && get_vcpu_stat(&(dom->threads[i])) > 0) {
+            dom->threads[i].type = ISVCPU;
         }
         i++;
     }
@@ -271,6 +285,10 @@ static void refresh_threads(struct domain *dom, struct domain *old_dom)
             continue;
         }
         refresh_delta_stat(&(dom->threads[i]), old_thread);
+        if (dom->threads[i].type == ISVCPU) {
+            refresh_delta_vcpu_stat(&(dom->threads[i]), old_thread);
+            sum_vcpu_stat(dom, &(dom->threads[i]));
+        }
     }
 }
 
@@ -294,4 +312,15 @@ int refresh_domains(struct domain_list *now, struct domain_list *pre)
     }
 
     return num;
+}
+
+int get_task_num(struct domain_list *list)
+{
+    int sum = 0;
+
+    for (int i = 0; i < list->num; i++) {
+        sum += list->domains[i].nlwp;
+    }
+    sum += list->num;
+    return sum;
 }

@@ -1,0 +1,33 @@
+1. Explanations of terms in project.
+ 1) field
+    Member of task that is being to show in screen
+    ===========================================
+      DID        VMname     PID  %CPU    S    P
+      3            cjj2   64716   0.0    S   23
+      |_       qemu-kvm   64716   0.0    S   23
+      |_       qemu-kvm   64734   0.0    S   13
+    ===========================================
+    "DID", "VMname" are field names, and "3" is the DID field of task,
+    "cjj2" is VMname field of task.
+ 2) delay time
+    time unit 1s, time interval between two display, and is also time interval
+    for obtaining data.
+
+2. What does items vmtop display means?
+    DID: virtual machine id in libvirt
+    VM/task-name: name of virtual machine or threads
+    PID: pid of qemu or threads
+    %CPU: CPU usage of task
+    EXTxxx: kvm exit times
+    P: physical cpu that task runs
+    S: task state, include: R, S, D, T, Z, X
+    %ST: cpu time vcpu wait pcpu while it is running other vcpu
+    %GUE: cpu time in guest
+    %HYP: cpu time in hypervisor
+
+3. What archs are supported?
+   Currently, only aarch64 is supported.
+
+4. Where to send bug report?
+   You may send your bug report to virt@openeuler.org or open an issue in
+   https://gitee.com/openeuler/vmtop.

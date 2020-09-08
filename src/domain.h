@@ -23,4 +23,5 @@ struct domain_list {
 
 int refresh_domains(struct domain_list *now, struct domain_list *pre);
 void init_domains(struct domain_list *list);
+int get_task_num(struct domain_list *list);
 #endif

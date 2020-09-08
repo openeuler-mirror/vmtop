@@ -21,8 +21,21 @@ enum fields_type {
     FD_VMNAME,
     FD_PID,
     FD_CPU,
+    FD_EXTHVC,
+    FD_EXTWFE,
+    FD_EXTWFI,
+    FD_EXTMMIOU,
+    FD_EXTMMIOK,
+    FD_EXTFP,
+    FD_EXTIRQ,
+    FD_EXTSYS64,
+    FD_EXTMABT,
+    FD_EXTSUM,
     FD_STATE,
     FD_P,
+    FD_ST,
+    FD_GUE,
+    FD_HYP,
     FD_END
 };
 
@@ -36,4 +49,5 @@ extern FID fields[];
 extern const char *summary_text;
 extern const char *filter_help;
 
+int get_show_field_num(void);
 #endif

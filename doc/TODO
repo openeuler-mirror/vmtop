@@ -1,0 +1,11 @@
+1. Disk io status
+   Show disk io status for each disk of each virtual machine.
+
+2. Set io status
+   Show net io status for each net card of each virtual machine.
+
+3. Sort key
+   Add short cut key to choose which field to sort by.
+
+4. Introducing multithreads
+   Now, vmtop use delay time to set time interval between two data acquisitions.
