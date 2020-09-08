@@ -22,6 +22,9 @@
 #include "../config.h"
 
 #define TIME_STR_MAX 40
+#define TERM_MODE 0
+#define TEXT_MODE 1
+#define FLUSH_SCR()  if (scr_mode == TERM_MODE) refresh(); else fflush(stdout)
 
 int delay_time;
 int quit_flag;
@@ -32,8 +35,11 @@ int begin_task;
 int begin_field;
 unsigned int thread_mode;    /* decide whether to show threads */
 int display_loop;
+int scr_mode;
 struct domain_list scr_cur;
 struct domain_list scr_pre;
+
+static int (*print_scr)(const char *fmt, ...);
 
 static void init_screen(void)
 {
@@ -42,6 +48,10 @@ static void init_screen(void)
     noecho();                 /* disable key echo while getch */
     cbreak();                 /* disable line buffer */
     curs_set(0);              /* set curse no display */
+}
+
+static void init_parameter(void)
+{
     init_domains(&scr_cur);
     init_domains(&scr_pre);
     begin_task = 1;
@@ -50,12 +60,17 @@ static void init_screen(void)
     quit_flag = 0;
     delay_time = 1;    /* default delay 1s between display */
     display_loop = -1;
+    scr_mode = TERM_MODE;
+    quit_flag = 0;
+    delay_time = 1;    /* default delay 1s between display */
+    scr_row_size = 1024;    /* defualt size row */
+    scr_col_size = 1024;    /* default size col */
 }
 
 static void parse_args(int argc, char *argv[])
 {
     int opt;
-    char *arg_ops = "Hd:n:";
+    char *arg_ops = "Hd:n:b";
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
@@ -76,6 +91,10 @@ static void parse_args(int argc, char *argv[])
             }
             break;
         }
+        case 'b': {
+            scr_mode = TEXT_MODE;
+            break;
+        }
         default:
             break;
         }
@@ -92,7 +111,7 @@ static void summary(void)
         return;
     }
 
-    printw(summary_text, time_buf, PACKAGE_VERSION, scr_cur.num);
+    print_scr(summary_text, time_buf, PACKAGE_VERSION, scr_cur.num);
     return;
 }
 
@@ -108,12 +127,12 @@ static void show_header(void)
             if (showd_width >= scr_col_size) {
                 break;
             }
-            printw("%*s", fields[i].align, fields[i].name);
+            print_scr("%*s", fields[i].align, fields[i].name);
         }
     }
     attroff(A_REVERSE);
-    printw("\n");
-    refresh();    /* refresh line to avoid last screen remains */
+    print_scr("\n");
+    FLUSH_SCR();
 }
 
 /*
@@ -125,92 +144,94 @@ static void print_domain_field(struct domain *dom, int field)
 
     switch (i) {
     case FD_VMNAME: {
-        printw("%*.*s", fields[i].align, fields[i].align - 2, dom->vmname);
+        print_scr("%*.*s", fields[i].align, fields[i].align - 2, dom->vmname);
         break;
     }
     case FD_DID: {
         if (dom->type == ISDOMAIN) {
-            printw("%*d", fields[i].align, dom->domain_id);
+            print_scr("%*d", fields[i].align, dom->domain_id);
         } else {
-            printw("%*s", fields[i].align, "|_");
+            print_scr("%*s", fields[i].align, "|_");
         }
         break;
     }
     case FD_PID: {
-        printw("%*lu", fields[i].align, dom->pid);
+        print_scr("%*lu", fields[i].align, dom->pid);
         break;
     }
     case FD_CPU: {
         u64 cpu_jeffies = dom->DELTA_VALUE(utime) + dom->DELTA_VALUE(stime);
         double usage = (double)cpu_jeffies * 100 /
                        sysconf(_SC_CLK_TCK) / delay_time;
-        printw("%*.1f", fields[i].align, usage);
+        print_scr("%*.1f", fields[i].align, usage);
         break;
     }
     /* kvm exit fields show */
     case FD_EXTHVC: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(hvc_exit_stat));
+        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(hvc_exit_stat));
         break;
     }
     case FD_EXTWFE: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(wfe_exit_stat));
+        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(wfe_exit_stat));
         break;
     }
     case FD_EXTWFI: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(wfi_exit_stat));
+        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(wfi_exit_stat));
         break;
     }
     case FD_EXTMMIOU: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(mmio_exit_user));
+        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(mmio_exit_user));
         break;
     }
     case FD_EXTMMIOK: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(mmio_exit_kernel));
+        print_scr("%*llu", fields[i].align,
+                  dom->DELTA_VALUE(mmio_exit_kernel));
         break;
     }
     case FD_EXTFP: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(fp_asimd_exit_stat));
+        print_scr("%*llu", fields[i].align,
+                  dom->DELTA_VALUE(fp_asimd_exit_stat));
         break;
     }
     case FD_EXTIRQ: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(irq_exit_stat));
+        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(irq_exit_stat));
         break;
     }
     case FD_EXTSYS64: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(sys64_exit_stat));
+        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(sys64_exit_stat));
         break;
     }
     case FD_EXTMABT: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(mabt_exit_stat));
+        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(mabt_exit_stat));
         break;
     }
     case FD_EXTSUM: {
-        printw("%*llu", fields[i].align, dom->DELTA_VALUE(exits));
+        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(exits));
         break;
     }
     case FD_STATE: {
-        printw("%*c", fields[i].align, dom->state);
+        print_scr("%*c", fields[i].align, dom->state);
         break;
     }
     case FD_P: {
-        printw("%*d", fields[i].align, dom->processor);
+        print_scr("%*d", fields[i].align, dom->processor);
         break;
     }
     case FD_ST: {
-        printw("%*.1f", fields[i].align,
-               (double)dom->DELTA_VALUE(steal) / 1000000.0f / delay_time);
+        print_scr("%*.1f", fields[i].align,
+                  (double)dom->DELTA_VALUE(steal) / 1000000.0f / delay_time);
         break;
     }
     case FD_GUE: {
-        printw("%*.1f", fields[i].align,
-               (double)dom->DELTA_VALUE(gtime) / 1000000.0f / delay_time);
+        print_scr("%*.1f", fields[i].align,
+                  (double)dom->DELTA_VALUE(gtime) / 1000000.0f / delay_time);
         break;
     }
     case FD_HYP: {
         u64 hyp_time = dom->DELTA_VALUE(vcpu_utime) - dom->DELTA_VALUE(gtime) +
                        dom->DELTA_VALUE(vcpu_stime);
-        printw("%*.1f", fields[i].align,
-               (double)hyp_time / 1000000.0f / delay_time);
+        print_scr("%*.1f", fields[i].align,
+                  (double)hyp_time / 1000000.0f / delay_time);
         break;
     }
     default:
@@ -229,6 +250,7 @@ static void show_task(struct domain *task)
         return;
     }
     clrtoeol();
+    FLUSH_SCR();    /* clear line before display */
     for (int i = 0; i < FD_END; i++) {
         if (fields[i].display_flag == 1 &&
             (i == FD_DID || i == FD_VMNAME || ++showd_field >= begin_field)) {
@@ -239,7 +261,8 @@ static void show_task(struct domain *task)
             print_domain_field(task, i);
         }
     }
-    printw("\n");
+    FLUSH_SCR();
+    print_scr("\n");
 }
 
 static void show_domains_threads(struct domain *dom)
@@ -267,6 +290,7 @@ static void show_domains(struct domain_list *list)
         }
     }
     clrtobot();    /* clear to bottom to avoid image residue */
+    FLUSH_SCR();
 }
 
 /*
@@ -399,37 +423,49 @@ int main(int argc, char *argv[])
 {
     int key;
 
-    init_screen();
-    quit_flag = 0;
-    delay_time = 1;    /* default delay 1s between display */
+    init_parameter();
     parse_args(argc, argv);
+    if (scr_mode == TERM_MODE) {
+        print_scr = printw;
+        init_screen();
+    } else {
+        print_scr = printf;
+    }
 
     do {
+        if (scr_mode == TERM_MODE) {
+            getmaxyx(stdscr, scr_row_size, scr_col_size);
+            move(0, 0);
+        }
         refresh_domains(&scr_cur, &scr_pre);
 
-        getmaxyx(stdscr, scr_row_size, scr_col_size);
-
-        /* display frame make */
-        move(0, 0);
+        /* frame make */
         summary();
-        EMPTY_LINE();
+        print_scr("\n");
         show_header();
         show_domains(&scr_cur);
 
-        /*
-         * set getch wait for delay time
-         * if timeout retutn ERR and continue
-         */
-        halfdelay(delay_time * 10);
-        key = getch();
-        if (key != ERR) {
-            parse_keys(key);
-            clear();
+        if (scr_mode == TERM_MODE) {
+            /*
+             * set getch wait for delay time
+             * if timeout return ERR and continue
+             */
+            halfdelay(delay_time * 10);
+            key = getch();
+            if (key != ERR) {
+                parse_keys(key);
+                clear();
+            }
+        } else {
+            usleep(delay_time * 1000000);    /* wait delay time in text mode */
         }
+        FLUSH_SCR();
         if (display_loop > 0) {
             display_loop--;
         }
     } while (!quit_flag && display_loop);
-    endwin();    /* quit from curses mode */
+    if (scr_mode == TERM_MODE) {
+        endwin();    /* quit from curses mode */
+    }
     return 0;
 }

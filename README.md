@@ -29,6 +29,7 @@ vmtop [-option]
 - d: Set delay time between two display
 - H: Show threads
 - n: Set display times, default no limit
+- b: Display in text mode to save result in file
 
 #### shortcut key
 - H: Open thread mode or close thread mode
