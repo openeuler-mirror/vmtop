@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.0
-Release: 0
+Release: 1
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
@@ -32,7 +32,8 @@ autoheader
 automake --add-missing
 ./configure --libdir=%{_libdir} \
             --bindir=%{_bindir} \
-            --sbindir=%{_sbindir}
+            --sbindir=%{_sbindir} \
+            --enable-secure-build
 make
 
 %install
@@ -45,5 +46,8 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Wed Sep 09 2020 Jiajun Chen <1250062498@qq.com> - 1.0-1
+- vmtop：Show kvm exit items and add document to project
+
 * Tue Aug 25 2020 Jiajun Chen <1250062498@qq.com> - 1.0-0
 - vmtop: add spec and source code tar for project to build rpm
