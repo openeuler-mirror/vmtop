@@ -219,19 +219,22 @@ static void print_domain_field(struct domain *dom, int field)
     }
     case FD_ST: {
         print_scr("%*.1f", fields[i].align,
-                  (double)dom->DELTA_VALUE(steal) / 1000000.0f / delay_time);
+                  (double)dom->DELTA_VALUE(steal) * 100 /
+                  1000000000.0f / delay_time);
         break;
     }
     case FD_GUE: {
         print_scr("%*.1f", fields[i].align,
-                  (double)dom->DELTA_VALUE(gtime) / 1000000.0f / delay_time);
+                  (double)dom->DELTA_VALUE(gtime) * 100 /
+                  1000000000.0f / delay_time);
         break;
     }
     case FD_HYP: {
         u64 hyp_time = dom->DELTA_VALUE(vcpu_utime) - dom->DELTA_VALUE(gtime) +
                        dom->DELTA_VALUE(vcpu_stime);
         print_scr("%*.1f", fields[i].align,
-                  (double)hyp_time / 1000000.0f / delay_time);
+                  (double)hyp_time * 100 /
+                  1000000000.0f / delay_time);
         break;
     }
     default:

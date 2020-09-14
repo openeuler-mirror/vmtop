@@ -39,9 +39,9 @@ FID fields[] = {
     {"EXTsum",   FIELDS_DISPLAY, 10 },
     {"S",        FIELDS_DISPLAY, 5  },
     {"P",        FIELDS_DISPLAY, 5  },
-    {"%ST",      FIELDS_DISPLAY, 6  },
-    {"%GUE",     FIELDS_DISPLAY, 6  },
-    {"%HYP",     FIELDS_DISPLAY, 6  }
+    {"%ST",      FIELDS_DISPLAY, 8  },
+    {"%GUE",     FIELDS_DISPLAY, 8  },
+    {"%HYP",     FIELDS_DISPLAY, 8  }
 };
 
 int get_show_field_num(void)
