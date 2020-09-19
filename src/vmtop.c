@@ -96,6 +96,7 @@ static void parse_args(int argc, char *argv[])
             break;
         }
         default:
+            exit(1);    /* exit vmtop when args are invalid */
             break;
         }
     }
