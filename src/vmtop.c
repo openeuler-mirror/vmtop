@@ -63,7 +63,7 @@ static void init_parameter(void)
     scr_mode = TERM_MODE;
     quit_flag = 0;
     delay_time = 1;    /* default delay 1s between display */
-    scr_row_size = 1024;    /* defualt size row */
+    scr_row_size = 2048;    /* defualt size row */
     scr_col_size = 1024;    /* default size col */
 }
 
