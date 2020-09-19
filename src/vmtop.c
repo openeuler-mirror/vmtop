@@ -250,7 +250,7 @@ static void show_task(struct domain *task)
     int showd_field = 0;
     showd_task++;
     if (showd_task < begin_task ||
-        showd_task - begin_task > scr_row_size - 4) {
+        showd_task - begin_task > scr_row_size - 5) {
         return;
     }
     clrtoeol();

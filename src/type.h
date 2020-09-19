@@ -42,7 +42,11 @@ typedef unsigned long long u64;
     static inline void DELTA_NAME(v)(struct domain *new, \
                                      struct domain *old) \
     {                                                    \
-        new->DELTA_VALUE(v) = new->v - old->v;           \
+        if (new->v >= old->v) {                          \
+            new->DELTA_VALUE(v) = new->v - old->v;       \
+        } else {                                         \
+            new->DELTA_VALUE(v) = old->DELTA_VALUE(v);   \
+        }                                                \
     }
 
 #define SUM_NAME(v) domain_sum_ ## v
