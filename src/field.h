@@ -48,6 +48,8 @@ typedef struct _field {
 extern FID fields[];
 extern const char *summary_text;
 extern const char *filter_help;
+extern const char *help_text;
+extern const char *version_text;
 
 int get_show_field_num(void);
 #endif

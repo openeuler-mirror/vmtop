@@ -20,6 +20,16 @@ const char *filter_help = ""
     "field filter - select which field to be showed\n"
     "Use up/down to navigate, use space to set whether chosen filed to be showed\n"
     "'q' to quit to normal display\n";
+const char *help_text = ""
+    "usage: vmtop [option] [arg]\n"
+    "-b     :output as text, which can be used for redirections\n"
+    "-d sec :set the refresh interval to secs\n"
+    "-h     :print this help message and exit\n"
+    "-H     :displays VM thread information\n"
+    "-n num :set the number of refresh times before automatic quit\n"
+    "-v     :show VMTOP version and exit\n";
+const char *version_text = ""
+    "vmtop-%s\n";
 
 FID fields[] = {
     /* name  .      flag     . align */

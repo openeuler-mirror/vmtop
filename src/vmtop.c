@@ -70,7 +70,7 @@ static void init_parameter(void)
 static void parse_args(int argc, char *argv[])
 {
     int opt;
-    char *arg_ops = "Hd:n:b";
+    char *arg_ops = "hvHd:n:b";
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
@@ -83,6 +83,14 @@ static void parse_args(int argc, char *argv[])
         case 'H': {
             thread_mode = 1;
             break;
+        }
+        case 'h': {
+            printf(help_text);
+            exit(0);
+        }
+        case 'v': {
+            printf(version_text, PACKAGE_VERSION);
+            exit(0);
         }
         case 'n': {
             display_loop = atoi(optarg);
