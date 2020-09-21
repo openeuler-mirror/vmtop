@@ -1,0 +1,30 @@
+From bd91aa4d39611d838ca60f8c3f27473e6a6b0c59 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sat, 19 Sep 2020 11:36:36 +0800
+Subject: [PATCH 2/4] display: expand row size in TEXT mode
+
+Currently default row size = 1024, which means only 1024 row
+will show in TEXT mode. But in some case, there are more than 1024 tasks
+include vcpu, iothreads and etc. So expand default row size to 2048.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/vmtop.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vmtop.c b/src/vmtop.c
+index cdf6ec4..7cfb1b3 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -63,7 +63,7 @@ static void init_parameter(void)
+     scr_mode = TERM_MODE;
+     quit_flag = 0;
+     delay_time = 1;    /* default delay 1s between display */
+-    scr_row_size = 1024;    /* defualt size row */
++    scr_row_size = 2048;    /* defualt size row */
+     scr_col_size = 1024;    /* default size col */
+ }
+ 
+-- 
+2.23.0
+

@@ -1,0 +1,67 @@
+From f4189eb5ddbebe0ddf58e7ea4bd25e8a5141930f Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Mon, 14 Sep 2020 20:02:23 +0800
+Subject: [PATCH 1/4] bugfix: fix %ST, %GUE, %HYP formula
+
+Since the steal time, gtime, stime which are acquired from debugfs
+count in ns unit, the usage formula should be:
+usage = time * 100 / 1000000000 / delay time
+
+And expand display align of %ST, %GUE, %HYP to avoid abnormal display.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/field.c | 6 +++---
+ src/vmtop.c | 9 ++++++---
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/src/field.c b/src/field.c
+index d5484b3..21be4fd 100644
+--- a/src/field.c
++++ b/src/field.c
+@@ -39,9 +39,9 @@ FID fields[] = {
+     {"EXTsum",   FIELDS_DISPLAY, 10 },
+     {"S",        FIELDS_DISPLAY, 5  },
+     {"P",        FIELDS_DISPLAY, 5  },
+-    {"%ST",      FIELDS_DISPLAY, 6  },
+-    {"%GUE",     FIELDS_DISPLAY, 6  },
+-    {"%HYP",     FIELDS_DISPLAY, 6  }
++    {"%ST",      FIELDS_DISPLAY, 8  },
++    {"%GUE",     FIELDS_DISPLAY, 8  },
++    {"%HYP",     FIELDS_DISPLAY, 8  }
+ };
+ 
+ int get_show_field_num(void)
+diff --git a/src/vmtop.c b/src/vmtop.c
+index d45418b..cdf6ec4 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -219,19 +219,22 @@ static void print_domain_field(struct domain *dom, int field)
+     }
+     case FD_ST: {
+         print_scr("%*.1f", fields[i].align,
+-                  (double)dom->DELTA_VALUE(steal) / 1000000.0f / delay_time);
++                  (double)dom->DELTA_VALUE(steal) * 100 /
++                  1000000000.0f / delay_time);
+         break;
+     }
+     case FD_GUE: {
+         print_scr("%*.1f", fields[i].align,
+-                  (double)dom->DELTA_VALUE(gtime) / 1000000.0f / delay_time);
++                  (double)dom->DELTA_VALUE(gtime) * 100 /
++                  1000000000.0f / delay_time);
+         break;
+     }
+     case FD_HYP: {
+         u64 hyp_time = dom->DELTA_VALUE(vcpu_utime) - dom->DELTA_VALUE(gtime) +
+                        dom->DELTA_VALUE(vcpu_stime);
+         print_scr("%*.1f", fields[i].align,
+-                  (double)hyp_time / 1000000.0f / delay_time);
++                  (double)hyp_time * 100 /
++                  1000000000.0f / delay_time);
+         break;
+     }
+     default:
+-- 
+2.23.0
+

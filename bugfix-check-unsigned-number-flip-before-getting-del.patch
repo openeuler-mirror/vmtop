@@ -1,0 +1,50 @@
+From 4eb3e65353484c6c5cf81046d7b2296151ef3b83 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sat, 19 Sep 2020 14:48:06 +0800
+Subject: [PATCH 4/4] bugfix: check unsigned number flip before getting delta
+
+Sometimes, a very large number will appear in EXTxxx display items.
+The reason of this phenomenon is that we do not check the size of
+two unsigned numbers before getting delta value of them,
+which will cause unsigned number flip.
+So add check before getting delta value.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/type.h  | 6 +++++-
+ src/vmtop.c | 2 +-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/type.h b/src/type.h
+index 85edc52..0e92388 100644
+--- a/src/type.h
++++ b/src/type.h
+@@ -42,7 +42,11 @@ typedef unsigned long long u64;
+     static inline void DELTA_NAME(v)(struct domain *new, \
+                                      struct domain *old) \
+     {                                                    \
+-        new->DELTA_VALUE(v) = new->v - old->v;           \
++        if (new->v >= old->v) {                          \
++            new->DELTA_VALUE(v) = new->v - old->v;       \
++        } else {                                         \
++            new->DELTA_VALUE(v) = old->DELTA_VALUE(v);   \
++        }                                                \
+     }
+ 
+ #define SUM_NAME(v) domain_sum_ ## v
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 18d3010..7a1b19b 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -250,7 +250,7 @@ static void show_task(struct domain *task)
+     int showd_field = 0;
+     showd_task++;
+     if (showd_task < begin_task ||
+-        showd_task - begin_task > scr_row_size - 4) {
++        showd_task - begin_task > scr_row_size - 5) {
+         return;
+     }
+     clrtoeol();
+-- 
+2.23.0
+

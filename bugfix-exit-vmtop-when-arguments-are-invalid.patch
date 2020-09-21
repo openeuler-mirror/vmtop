@@ -1,0 +1,28 @@
+From 92239c1b444cd3f2904e2b3d7c7eaada1e9693ec Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sat, 19 Sep 2020 11:46:08 +0800
+Subject: [PATCH 3/4] bugfix: exit vmtop when arguments are invalid
+
+Currently if vmtop receive invalid args, vmtop will still run.
+It is a abnormal behavior, so exit vmtop when arguments are invalid.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/vmtop.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 7cfb1b3..18d3010 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -96,6 +96,7 @@ static void parse_args(int argc, char *argv[])
+             break;
+         }
+         default:
++            exit(1);    /* exit vmtop when args are invalid */
+             break;
+         }
+     }
+-- 
+2.23.0
+

@@ -1,12 +1,17 @@
 Name: vmtop
 Version: 1.0
-Release: 1
+Release: 2
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
 URL: https://gitee.com/openeuler/vmtop
 
-Source:https://gitee.com/src-openeuler/vmtop/blob/master/%{name}-%{version}.tar.gz 
+Source:https://gitee.com/src-openeuler/vmtop/blob/master/%{name}-%{version}.tar.gz
+
+Patch0001: bugfix-fix-ST-GUE-HYP-formula.patch
+Patch0002: display-expand-row-size-in-TEXT-mode.patch
+Patch0003: bugfix-exit-vmtop-when-arguments-are-invalid.patch
+Patch0004: bugfix-check-unsigned-number-flip-before-getting-del.patch
 
 Requires: libvirt, ncurses
 
@@ -22,7 +27,8 @@ Provides: vmtop = %{version}-%{release}
 This is a userspace tool which you can run it in host to help detecting VM's performance. By vmtop, you can quickly query vcpu info such as cpu usage, kvm exit times, memory usage and etc.
 
 %prep
-%autosetup -c -n %{name}-%{version}
+%setup -c -n %{name}-%{version}
+%autopatch -p1
 
 
 %build
@@ -46,6 +52,12 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Mon Sep 21 2020 Jiajun Chen <1250062498@qq.com> - 1.0-2
+- bugfix: fix %ST, %GUE, %HYP formula
+- display: expand row size in TEXT mode
+- bugfix: exit vmtop when arguments are invalid
+- bugfix: check unsigned number flip before getting delta
+
 * Wed Sep 09 2020 Jiajun Chen <1250062498@qq.com> - 1.0-1
 - vmtop：Show kvm exit items and add document to project
 
