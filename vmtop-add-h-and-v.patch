@@ -1,0 +1,77 @@
+From 982faf44983199f8b26d0fa48ea3ff08f1267c92 Mon Sep 17 00:00:00 2001
+From: Ruyi Chen <chenruyi2@huawei.com>
+Date: Mon, 21 Sep 2020 16:36:36 +0800
+Subject: [PATCH] vmtop: add -h and -v
+
+Signed-off-by: Ruyi Chen <chenruyi2@huawei.com>
+---
+ src/field.c | 10 ++++++++++
+ src/field.h |  2 ++
+ src/vmtop.c | 10 +++++++++-
+ 3 files changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/src/field.c b/src/field.c
+index 21be4fd..6a07fcc 100644
+--- a/src/field.c
++++ b/src/field.c
+@@ -20,6 +20,16 @@ const char *filter_help = ""
+     "field filter - select which field to be showed\n"
+     "Use up/down to navigate, use space to set whether chosen filed to be showed\n"
+     "'q' to quit to normal display\n";
++const char *help_text = ""
++    "usage: vmtop [option] [arg]\n"
++    "-b     :output as text, which can be used for redirections\n"
++    "-d sec :set the refresh interval to secs\n"
++    "-h     :print this help message and exit\n"
++    "-H     :displays VM thread information\n"
++    "-n num :set the number of refresh times before automatic quit\n"
++    "-v     :show VMTOP version and exit\n";
++const char *version_text = ""
++    "vmtop-%s\n";
+ 
+ FID fields[] = {
+     /* name  .      flag     . align */
+diff --git a/src/field.h b/src/field.h
+index 4744ab7..ff98ee4 100644
+--- a/src/field.h
++++ b/src/field.h
+@@ -48,6 +48,8 @@ typedef struct _field {
+ extern FID fields[];
+ extern const char *summary_text;
+ extern const char *filter_help;
++extern const char *help_text;
++extern const char *version_text;
+ 
+ int get_show_field_num(void);
+ #endif
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 7a1b19b..796c67f 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -70,7 +70,7 @@ static void init_parameter(void)
+ static void parse_args(int argc, char *argv[])
+ {
+     int opt;
+-    char *arg_ops = "Hd:n:b";
++    char *arg_ops = "hvHd:n:b";
+     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
+         switch (opt) {
+         case 'd': {
+@@ -84,6 +84,14 @@ static void parse_args(int argc, char *argv[])
+             thread_mode = 1;
+             break;
+         }
++        case 'h': {
++            printf(help_text);
++            exit(0);
++        }
++        case 'v': {
++            printf(version_text, PACKAGE_VERSION);
++            exit(0);
++        }
+         case 'n': {
+             display_loop = atoi(optarg);
+             if (display_loop == 0) {
+-- 
+2.23.0
+

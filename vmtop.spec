@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.0
-Release: 2
+Release: 3
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
@@ -12,6 +12,7 @@ Patch0001: bugfix-fix-ST-GUE-HYP-formula.patch
 Patch0002: display-expand-row-size-in-TEXT-mode.patch
 Patch0003: bugfix-exit-vmtop-when-arguments-are-invalid.patch
 Patch0004: bugfix-check-unsigned-number-flip-before-getting-del.patch
+Patch0005: vmtop-add-h-and-v.patch
 
 Requires: libvirt, ncurses
 
@@ -52,6 +53,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Mon Sep 21 2020 Ruyi Chen <chenruyi2@huawei.com>
+- vmtop: add -h and -v
+
 * Mon Sep 21 2020 Jiajun Chen <1250062498@qq.com> - 1.0-2
 - bugfix: fix %ST, %GUE, %HYP formula
 - display: expand row size in TEXT mode
