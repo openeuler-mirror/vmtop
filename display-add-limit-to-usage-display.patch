@@ -1,0 +1,101 @@
+From 2eae6818fa2267a3fdbc213b85e479e86d451ad6 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sun, 27 Sep 2020 19:47:24 +0800
+Subject: [PATCH] display: add limit to usage display
+
+Because of time accuracy, the usage sometime may be more than vcpu nums.
+This is a matter of precision, so add limit to these usage.
+---
+ src/domain.c |  2 ++
+ src/type.h   |  1 +
+ src/vmtop.c  | 33 ++++++++++++++++++++++++---------
+ 3 files changed, 27 insertions(+), 9 deletions(-)
+
+diff --git a/src/domain.c b/src/domain.c
+index 6b4ac2b..ac15d53 100644
+--- a/src/domain.c
++++ b/src/domain.c
+@@ -194,7 +194,9 @@ static int get_child_pid(struct domain *dom)
+         if (strstr(dom->threads[i].vmname, "CPU") != NULL
+             && get_vcpu_stat(&(dom->threads[i])) > 0) {
+             dom->threads[i].type = ISVCPU;
++            dom->smp_vcpus++;
+         }
++        dom->threads[i].smp_vcpus = 1;
+         i++;
+     }
+     closedir(dirptr);
+diff --git a/src/type.h b/src/type.h
+index 0e92388..5bbde33 100644
+--- a/src/type.h
++++ b/src/type.h
+@@ -141,6 +141,7 @@ struct domain {
+         DFX_VALUE(vcpu_stime),
+         DFX_VALUE(gtime);
+     struct domain *threads;
++    int smp_vcpus;
+ };
+ 
+ enum process_type {
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 796c67f..4e10df7 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -172,6 +172,10 @@ static void print_domain_field(struct domain *dom, int field)
+         u64 cpu_jeffies = dom->DELTA_VALUE(utime) + dom->DELTA_VALUE(stime);
+         double usage = (double)cpu_jeffies * 100 /
+                        sysconf(_SC_CLK_TCK) / delay_time;
++
++        if (usage >= 100.0 * dom->smp_vcpus) {
++            usage = 100.0 * dom->smp_vcpus;
++        }
+         print_scr("%*.1f", fields[i].align, usage);
+         break;
+     }
+@@ -227,23 +231,34 @@ static void print_domain_field(struct domain *dom, int field)
+         break;
+     }
+     case FD_ST: {
+-        print_scr("%*.1f", fields[i].align,
+-                  (double)dom->DELTA_VALUE(steal) * 100 /
+-                  1000000000.0f / delay_time);
++        double usage = (double)dom->DELTA_VALUE(steal) * 100 /
++                       1000000000.0f / delay_time;
++
++        if (usage >= 100.0 * dom->smp_vcpus) {
++            usage = 100.0 * dom->smp_vcpus;
++        }
++        print_scr("%*.1f", fields[i].align, usage);
+         break;
+     }
+     case FD_GUE: {
+-        print_scr("%*.1f", fields[i].align,
+-                  (double)dom->DELTA_VALUE(gtime) * 100 /
+-                  1000000000.0f / delay_time);
++        double usage = (double)dom->DELTA_VALUE(gtime) * 100 /
++                       1000000000.0f / delay_time;
++
++        if (usage >= 100.0 * dom->smp_vcpus) {
++            usage = 100.0 * dom->smp_vcpus;
++        }
++        print_scr("%*.1f", fields[i].align, usage);
+         break;
+     }
+     case FD_HYP: {
+         u64 hyp_time = dom->DELTA_VALUE(vcpu_utime) - dom->DELTA_VALUE(gtime) +
+                        dom->DELTA_VALUE(vcpu_stime);
+-        print_scr("%*.1f", fields[i].align,
+-                  (double)hyp_time * 100 /
+-                  1000000000.0f / delay_time);
++        double usage = (double)hyp_time * 100 / 1000000000.0f / delay_time;
++
++        if (usage >= 100.0 * dom->smp_vcpus) {
++            usage = 100.0 * dom->smp_vcpus;
++        }
++        print_scr("%*.1f", fields[i].align, usage);
+         break;
+     }
+     default:
+-- 
+2.23.0
+
