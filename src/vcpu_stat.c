@@ -15,7 +15,6 @@
 #include "type.h"
 #include "vcpu_stat.h"
 
-#define PID_STRING_SIZE 20
 #define KVM_VCPU_STAT_PATH "/sys/kernel/debug/kvm/vcpu_stat"
 
 struct file_item vcpu_stat_stab[] = {
@@ -57,12 +56,9 @@ const int vcpu_stat_size = sizeof(vcpu_stat_stab) / sizeof(struct file_item);
 int get_vcpu_stat(struct domain *dom)
 {
     char buf[BUF_SIZE];
-    char pid[PID_STRING_SIZE];
+    unsigned int pid;
     FILE *fp = NULL;
 
-    if (snprintf(pid, PID_STRING_SIZE, "%u", dom->pid) < 0) {
-        return -1;
-    }
     fp = fopen(KVM_VCPU_STAT_PATH, "r");
     if (!fp) {
         return -1;
@@ -72,7 +68,9 @@ int get_vcpu_stat(struct domain *dom)
         char *p_next = NULL;
         int i = 0;
 
-        if (strstr(buf, pid) == NULL) {
+        /* judge whether vcpu pid is match */
+        sscanf(buf, "%u", &pid);
+        if (pid != dom->pid) {
             continue;
         }
         for (p = strtok_r(buf, " \t\r\n", &p_next); p && i < vcpu_stat_size;
