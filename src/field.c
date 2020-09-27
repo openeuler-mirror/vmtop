@@ -36,7 +36,7 @@ FID fields[] = {
     {"DID",      FIELDS_DISPLAY, 5  },
     {"VM/task-name", FIELDS_DISPLAY, 14 },
     {"PID",      FIELDS_DISPLAY, 8  },
-    {"%CPU",     FIELDS_DISPLAY, 6  },
+    {"%CPU",     FIELDS_DISPLAY, 8  },
     {"EXThvc",   FIELDS_DISPLAY, 10 },
     {"EXTwfe",   FIELDS_DISPLAY, 10 },
     {"EXTwfi",   FIELDS_DISPLAY, 10 },
