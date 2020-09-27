@@ -194,7 +194,9 @@ static int get_child_pid(struct domain *dom)
         if (strstr(dom->threads[i].vmname, "CPU") != NULL
             && get_vcpu_stat(&(dom->threads[i])) > 0) {
             dom->threads[i].type = ISVCPU;
+            dom->smp_vcpus++;
         }
+        dom->threads[i].smp_vcpus = 1;
         i++;
     }
     closedir(dirptr);
