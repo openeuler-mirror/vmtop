@@ -141,6 +141,7 @@ struct domain {
         DFX_VALUE(vcpu_stime),
         DFX_VALUE(gtime);
     struct domain *threads;
+    int smp_vcpus;
 };
 
 enum process_type {
