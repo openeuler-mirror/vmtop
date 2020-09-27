@@ -1,0 +1,27 @@
+From 56923111d6218dfd9de68c4d0ae9a3b1ec96ff9a Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sun, 27 Sep 2020 16:11:45 +0800
+Subject: [PATCH] display: expand %CPU display
+
+Now, %CPU's align is 6, and is not enough to display VM
+that has vcpus more than 10. So expand align to 8.
+---
+ src/field.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/field.c b/src/field.c
+index 6a07fcc..3ae2996 100644
+--- a/src/field.c
++++ b/src/field.c
+@@ -36,7 +36,7 @@ FID fields[] = {
+     {"DID",      FIELDS_DISPLAY, 5  },
+     {"VM/task-name", FIELDS_DISPLAY, 14 },
+     {"PID",      FIELDS_DISPLAY, 8  },
+-    {"%CPU",     FIELDS_DISPLAY, 6  },
++    {"%CPU",     FIELDS_DISPLAY, 8  },
+     {"EXThvc",   FIELDS_DISPLAY, 10 },
+     {"EXTwfe",   FIELDS_DISPLAY, 10 },
+     {"EXTwfi",   FIELDS_DISPLAY, 10 },
+-- 
+2.23.0
+
