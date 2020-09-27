@@ -144,6 +144,15 @@ static void show_header(void)
     FLUSH_SCR();
 }
 
+static double justify_usage(double usage, struct domain *dom)
+{
+    double ret = usage;
+    if (usage >= 100.0 * dom->smp_vcpus) {
+        ret = 100.0 * dom->smp_vcpus;
+    }
+    return ret;
+}
+
 /*
  * show single field of a domain task, align with header
  */
@@ -173,81 +182,37 @@ static void print_domain_field(struct domain *dom, int field)
         double usage = (double)cpu_jeffies * 100 /
                        sysconf(_SC_CLK_TCK) / delay_time;
 
-        if (usage >= 100.0 * dom->smp_vcpus) {
-            usage = 100.0 * dom->smp_vcpus;
-        }
-        print_scr("%*.1f", fields[i].align, usage);
+        print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
         break;
     }
     /* kvm exit fields show */
-    case FD_EXTHVC: {
-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(hvc_exit_stat));
-        break;
-    }
-    case FD_EXTWFE: {
-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(wfe_exit_stat));
-        break;
-    }
-    case FD_EXTWFI: {
-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(wfi_exit_stat));
-        break;
-    }
-    case FD_EXTMMIOU: {
-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(mmio_exit_user));
-        break;
-    }
-    case FD_EXTMMIOK: {
-        print_scr("%*llu", fields[i].align,
-                  dom->DELTA_VALUE(mmio_exit_kernel));
-        break;
-    }
-    case FD_EXTFP: {
-        print_scr("%*llu", fields[i].align,
-                  dom->DELTA_VALUE(fp_asimd_exit_stat));
-        break;
-    }
-    case FD_EXTIRQ: {
-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(irq_exit_stat));
-        break;
-    }
-    case FD_EXTSYS64: {
-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(sys64_exit_stat));
-        break;
-    }
-    case FD_EXTMABT: {
-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(mabt_exit_stat));
-        break;
-    }
+    case FD_EXTHVC:
+    case FD_EXTWFE:
+    case FD_EXTWFI:
+    case FD_EXTMMIOU:
+    case FD_EXTMMIOK:
+    case FD_EXTFP:
+    case FD_EXTIRQ:
+    case FD_EXTSYS64:
+    case FD_EXTMABT:
     case FD_EXTSUM: {
-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(exits));
+        print_scr("%*llu", fields[i].align, *(u64 *)(*fields[i].get_fun)(dom));
         break;
     }
     case FD_STATE: {
-        print_scr("%*c", fields[i].align, dom->state);
+        print_scr("%*c", fields[i].align, *(char *)(*fields[i].get_fun)(dom));
         break;
     }
     case FD_P: {
-        print_scr("%*d", fields[i].align, dom->processor);
+        print_scr("%*d", fields[i].align, *(int *)(*fields[i].get_fun)(dom));
         break;
     }
-    case FD_ST: {
-        double usage = (double)dom->DELTA_VALUE(steal) * 100 /
-                       1000000000.0f / delay_time;
-
-        if (usage >= 100.0 * dom->smp_vcpus) {
-            usage = 100.0 * dom->smp_vcpus;
-        }
-        print_scr("%*.1f", fields[i].align, usage);
-        break;
-    }
+    case FD_ST:
     case FD_GUE: {
-        double usage = (double)dom->DELTA_VALUE(gtime) * 100 /
-                       1000000000.0f / delay_time;
+        u64 time = *(u64 *)(*fields[i].get_fun)(dom);
+        double usage = (double)time * 100 / 1000000000.0f / delay_time;
 
-        if (usage >= 100.0 * dom->smp_vcpus) {
-            usage = 100.0 * dom->smp_vcpus;
-        }
-        print_scr("%*.1f", fields[i].align, usage);
+        print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
         break;
     }
     case FD_HYP: {
@@ -255,10 +220,7 @@ static void print_domain_field(struct domain *dom, int field)
                        dom->DELTA_VALUE(vcpu_stime);
         double usage = (double)hyp_time * 100 / 1000000000.0f / delay_time;
 
-        if (usage >= 100.0 * dom->smp_vcpus) {
-            usage = 100.0 * dom->smp_vcpus;
-        }
-        print_scr("%*.1f", fields[i].align, usage);
+        print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
         break;
     }
     default:
