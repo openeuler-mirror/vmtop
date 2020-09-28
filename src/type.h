@@ -59,6 +59,7 @@ typedef unsigned long long u64;
 
 #define GET_DELTA_FUN(v) \
     GET_VALUE(v)  \
+    GET_DELTA_VALUE(v) \
     DELTA_FUN(v)  \
     SUM_FUN(v)
 
@@ -141,6 +142,7 @@ struct domain {
         DFX_VALUE(vcpu_stime),
         DFX_VALUE(gtime);
     struct domain *threads;
+    int smp_vcpus;
 };
 
 enum process_type {

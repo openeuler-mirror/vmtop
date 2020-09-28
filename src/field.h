@@ -43,6 +43,7 @@ typedef struct _field {
     const char *name;
     int display_flag;
     int align;
+    void *(*get_fun)(void *);
 } FID;
 
 extern FID fields[];
