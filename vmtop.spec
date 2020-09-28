@@ -13,6 +13,10 @@ Patch0002: display-expand-row-size-in-TEXT-mode.patch
 Patch0003: bugfix-exit-vmtop-when-arguments-are-invalid.patch
 Patch0004: bugfix-check-unsigned-number-flip-before-getting-del.patch
 Patch0005: vmtop-add-h-and-v.patch
+Patch0006: vcpustat-modify-vcpu-info-acquirement-from-debugfs.patch
+Patch0007: display-expand-CPU-display.patch
+Patch0008: display-add-limit-to-usage-display.patch
+Patch0009: vmtop-simplify-print_domain_field.patch
 
 Requires: libvirt, ncurses
 
@@ -53,6 +57,12 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Sun Sep 27 2020 nocjj <1250062498@qq.com>
+- vcpustat: modify vcpu info acquirement from debugfs
+- display: expand %CPU display
+- display: add limit to usage display
+- vmtop: simplify print_domain_field
+
 * Mon Sep 21 2020 Ruyi Chen <chenruyi2@huawei.com>
 - vmtop: add -h and -v
 
