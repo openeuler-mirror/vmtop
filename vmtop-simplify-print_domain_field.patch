@@ -1,0 +1,234 @@
+From af7e7f69ef5d6759b3c87da44d70b684cbd1b43c Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sun, 27 Sep 2020 20:36:16 +0800
+Subject: [PATCH] vmtop: simplify print_domain_field
+
+Use array to simplify print_domain_field.
+---
+ src/field.c | 44 ++++++++++++++-----------
+ src/field.h |  1 +
+ src/type.h  |  1 +
+ src/vmtop.c | 92 ++++++++++++++++-------------------------------------
+ 4 files changed, 54 insertions(+), 84 deletions(-)
+
+diff --git a/src/field.c b/src/field.c
+index 3ae2996..1fc2fee 100644
+--- a/src/field.c
++++ b/src/field.c
+@@ -12,6 +12,9 @@
+  ********************************************************************************/
+ 
+ #include "field.h"
++#include "type.h"
++#include "vcpu_stat.h"
++#include "proc.h"
+ 
+ const char *summary_text = ""
+     "vmtop - %s - %s\n"
+@@ -32,26 +35,29 @@ const char *version_text = ""
+     "vmtop-%s\n";
+ 
+ FID fields[] = {
++#define GDF(f) (void *)GET_DELTA_NAME(f)
++#define GF(f) (void *)GET_NAME(f)
+     /* name  .      flag     . align */
+-    {"DID",      FIELDS_DISPLAY, 5  },
+-    {"VM/task-name", FIELDS_DISPLAY, 14 },
+-    {"PID",      FIELDS_DISPLAY, 8  },
+-    {"%CPU",     FIELDS_DISPLAY, 8  },
+-    {"EXThvc",   FIELDS_DISPLAY, 10 },
+-    {"EXTwfe",   FIELDS_DISPLAY, 10 },
+-    {"EXTwfi",   FIELDS_DISPLAY, 10 },
+-    {"EXTmmioU", FIELDS_DISPLAY, 10 },
+-    {"EXTmmioK", FIELDS_DISPLAY, 10 },
+-    {"EXTfp",    FIELDS_DISPLAY, 10 },
+-    {"EXTirq",   FIELDS_DISPLAY, 10 },
+-    {"EXTsys64", FIELDS_DISPLAY, 10 },
+-    {"EXTmabt",  FIELDS_DISPLAY, 10 },
+-    {"EXTsum",   FIELDS_DISPLAY, 10 },
+-    {"S",        FIELDS_DISPLAY, 5  },
+-    {"P",        FIELDS_DISPLAY, 5  },
+-    {"%ST",      FIELDS_DISPLAY, 8  },
+-    {"%GUE",     FIELDS_DISPLAY, 8  },
+-    {"%HYP",     FIELDS_DISPLAY, 8  }
++    {"DID",      FIELDS_DISPLAY, 5,  NULL                   },
++    {"VM/task-name", FIELDS_DISPLAY, 14, NULL               },
++    {"PID",      FIELDS_DISPLAY, 8,  NULL                   },
++    {"%CPU",     FIELDS_DISPLAY, 8,  NULL                   },
++    {"EXThvc",   FIELDS_DISPLAY, 10, GDF(hvc_exit_stat)     },
++    {"EXTwfe",   FIELDS_DISPLAY, 10, GDF(wfe_exit_stat)     },
++    {"EXTwfi",   FIELDS_DISPLAY, 10, GDF(wfi_exit_stat)     },
++    {"EXTmmioU", FIELDS_DISPLAY, 10, GDF(mmio_exit_user)    },
++    {"EXTmmioK", FIELDS_DISPLAY, 10, GDF(mmio_exit_kernel)  },
++    {"EXTfp",    FIELDS_DISPLAY, 10, GDF(fp_asimd_exit_stat)},
++    {"EXTirq",   FIELDS_DISPLAY, 10, GDF(irq_exit_stat)     },
++    {"EXTsys64", FIELDS_DISPLAY, 10, GDF(sys64_exit_stat)   },
++    {"EXTmabt",  FIELDS_DISPLAY, 10, GDF(mabt_exit_stat)    },
++    {"EXTsum",   FIELDS_DISPLAY, 10, GDF(exits)             },
++    {"S",        FIELDS_DISPLAY, 5,  GF(state)              },
++    {"P",        FIELDS_DISPLAY, 5,  GF(processor)          },
++    {"%ST",      FIELDS_DISPLAY, 8,  GDF(steal)             },
++    {"%GUE",     FIELDS_DISPLAY, 8,  GDF(gtime)             },
++    {"%HYP",     FIELDS_DISPLAY, 8,  NULL}
++#undef GDF
+ };
+ 
+ int get_show_field_num(void)
+diff --git a/src/field.h b/src/field.h
+index ff98ee4..88808e7 100644
+--- a/src/field.h
++++ b/src/field.h
+@@ -43,6 +43,7 @@ typedef struct _field {
+     const char *name;
+     int display_flag;
+     int align;
++    void *(*get_fun)(void *);
+ } FID;
+ 
+ extern FID fields[];
+diff --git a/src/type.h b/src/type.h
+index 5bbde33..ac00b0d 100644
+--- a/src/type.h
++++ b/src/type.h
+@@ -59,6 +59,7 @@ typedef unsigned long long u64;
+ 
+ #define GET_DELTA_FUN(v) \
+     GET_VALUE(v)  \
++    GET_DELTA_VALUE(v) \
+     DELTA_FUN(v)  \
+     SUM_FUN(v)
+ 
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 4e10df7..12b073d 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -144,6 +144,15 @@ static void show_header(void)
+     FLUSH_SCR();
+ }
+ 
++static double justify_usage(double usage, struct domain *dom)
++{
++    double ret = usage;
++    if (usage >= 100.0 * dom->smp_vcpus) {
++        ret = 100.0 * dom->smp_vcpus;
++    }
++    return ret;
++}
++
+ /*
+  * show single field of a domain task, align with header
+  */
+@@ -173,81 +182,37 @@ static void print_domain_field(struct domain *dom, int field)
+         double usage = (double)cpu_jeffies * 100 /
+                        sysconf(_SC_CLK_TCK) / delay_time;
+ 
+-        if (usage >= 100.0 * dom->smp_vcpus) {
+-            usage = 100.0 * dom->smp_vcpus;
+-        }
+-        print_scr("%*.1f", fields[i].align, usage);
++        print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
+         break;
+     }
+     /* kvm exit fields show */
+-    case FD_EXTHVC: {
+-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(hvc_exit_stat));
+-        break;
+-    }
+-    case FD_EXTWFE: {
+-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(wfe_exit_stat));
+-        break;
+-    }
+-    case FD_EXTWFI: {
+-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(wfi_exit_stat));
+-        break;
+-    }
+-    case FD_EXTMMIOU: {
+-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(mmio_exit_user));
+-        break;
+-    }
+-    case FD_EXTMMIOK: {
+-        print_scr("%*llu", fields[i].align,
+-                  dom->DELTA_VALUE(mmio_exit_kernel));
+-        break;
+-    }
+-    case FD_EXTFP: {
+-        print_scr("%*llu", fields[i].align,
+-                  dom->DELTA_VALUE(fp_asimd_exit_stat));
+-        break;
+-    }
+-    case FD_EXTIRQ: {
+-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(irq_exit_stat));
+-        break;
+-    }
+-    case FD_EXTSYS64: {
+-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(sys64_exit_stat));
+-        break;
+-    }
+-    case FD_EXTMABT: {
+-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(mabt_exit_stat));
+-        break;
+-    }
++    case FD_EXTHVC:
++    case FD_EXTWFE:
++    case FD_EXTWFI:
++    case FD_EXTMMIOU:
++    case FD_EXTMMIOK:
++    case FD_EXTFP:
++    case FD_EXTIRQ:
++    case FD_EXTSYS64:
++    case FD_EXTMABT:
+     case FD_EXTSUM: {
+-        print_scr("%*llu", fields[i].align, dom->DELTA_VALUE(exits));
++        print_scr("%*llu", fields[i].align, *(u64 *)(*fields[i].get_fun)(dom));
+         break;
+     }
+     case FD_STATE: {
+-        print_scr("%*c", fields[i].align, dom->state);
++        print_scr("%*c", fields[i].align, *(char *)(*fields[i].get_fun)(dom));
+         break;
+     }
+     case FD_P: {
+-        print_scr("%*d", fields[i].align, dom->processor);
+-        break;
+-    }
+-    case FD_ST: {
+-        double usage = (double)dom->DELTA_VALUE(steal) * 100 /
+-                       1000000000.0f / delay_time;
+-
+-        if (usage >= 100.0 * dom->smp_vcpus) {
+-            usage = 100.0 * dom->smp_vcpus;
+-        }
+-        print_scr("%*.1f", fields[i].align, usage);
++        print_scr("%*d", fields[i].align, *(int *)(*fields[i].get_fun)(dom));
+         break;
+     }
++    case FD_ST:
+     case FD_GUE: {
+-        double usage = (double)dom->DELTA_VALUE(gtime) * 100 /
+-                       1000000000.0f / delay_time;
++        u64 time = *(u64 *)(*fields[i].get_fun)(dom);
++        double usage = (double)time * 100 / 1000000000.0f / delay_time;
+ 
+-        if (usage >= 100.0 * dom->smp_vcpus) {
+-            usage = 100.0 * dom->smp_vcpus;
+-        }
+-        print_scr("%*.1f", fields[i].align, usage);
++        print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
+         break;
+     }
+     case FD_HYP: {
+@@ -255,10 +220,7 @@ static void print_domain_field(struct domain *dom, int field)
+                        dom->DELTA_VALUE(vcpu_stime);
+         double usage = (double)hyp_time * 100 / 1000000000.0f / delay_time;
+ 
+-        if (usage >= 100.0 * dom->smp_vcpus) {
+-            usage = 100.0 * dom->smp_vcpus;
+-        }
+-        print_scr("%*.1f", fields[i].align, usage);
++        print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
+         break;
+     }
+     default:
+-- 
+2.23.0
+
