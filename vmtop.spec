@@ -1,12 +1,12 @@
 Name: vmtop
-Version: 1.0
-Release: 4
+Version: 1.1
+Release: 0
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
 URL: https://gitee.com/openeuler/vmtop
 
-Source:https://gitee.com/src-openeuler/vmtop/blob/master/%{name}-%{version}.tar.gz
+Source:https://gitee.com/openeuler/vmtop/repository/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 Patch0001: bugfix-fix-ST-GUE-HYP-formula.patch
 Patch0002: display-expand-row-size-in-TEXT-mode.patch
@@ -32,7 +32,7 @@ Provides: vmtop = %{version}-%{release}
 This is a userspace tool which you can run it in host to help detecting VM's performance. By vmtop, you can quickly query vcpu info such as cpu usage, kvm exit times, memory usage and etc.
 
 %prep
-%setup -c -n %{name}-%{version}
+%setup -n %{name}
 %autopatch -p1
 
 
@@ -57,6 +57,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Sat Oct 10 2020 Jiajun Chen <1250062498@qq.com> -1.1-0
+- spec: modify source url
+
 * Sun Sep 27 2020 nocjj <1250062498@qq.com>
 - vcpustat: modify vcpu info acquirement from debugfs
 - display: expand %CPU display
