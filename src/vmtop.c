@@ -298,11 +298,24 @@ static void show_domains(struct domain_list *list)
  */
 static void print_field(int high_light)
 {
-    int x = 3;    /* display x local */
-    int y = 4;    /* display y local */
+    int x, y, x_local, y_local;
     unsigned int attr_flag;
 
+    getyx(stdscr, y_local, x_local);    /* get cursor coordinates */
+    y = y_local;
+    x = x_local + 3;    /* leave 3 spaces in the beginning for beauty */
+
     for (int i = 0; i < FD_END; i++) {
+        /*
+         * if y local is more than scr_row_size, fields list display will
+         * out of screen range. So start another col to show fields list
+         * with 20 intervals.
+         */
+        if (y >= scr_row_size) {
+            y = y_local;
+            x = x + 20;
+        }
+
         attr_flag = A_NORMAL;
         if (i == high_light) {
             attr_flag |= A_REVERSE;     /* high light chosen field */
