@@ -115,4 +115,5 @@ void sum_vcpu_stat(struct domain *dom, struct domain *thread)
             (*vcpu_stat_stab[i].sum_fun)(dom, thread);
         }
     }
+    dom->st_max += thread->st_max;
 }
