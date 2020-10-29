@@ -65,12 +65,13 @@ static void init_parameter(void)
     delay_time = 1;    /* default delay 1s between display */
     scr_row_size = 2048;    /* defualt size row */
     scr_col_size = 1024;    /* default size col */
+    monitor_id = -1;    /* default monitor all domains */
 }
 
 static void parse_args(int argc, char *argv[])
 {
     int opt;
-    char *arg_ops = "hvHd:n:b";
+    char *arg_ops = "hvHd:n:bp:";
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
@@ -101,6 +102,10 @@ static void parse_args(int argc, char *argv[])
         }
         case 'b': {
             scr_mode = TEXT_MODE;
+            break;
+        }
+        case 'p': {
+            monitor_id = atoi(optarg);
             break;
         }
         default:

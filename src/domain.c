@@ -25,6 +25,8 @@
 #define CGROUP_PATH_SIZE 30
 #define TASK_STRING_SIZE 30
 
+int monitor_id;
+
 /* domain list operation */
 void init_domains(struct domain_list *list)
 {
@@ -229,6 +231,9 @@ static int set_domain(struct domain *dom, const char *name)
 
     dom->domain_id = get_id_from_cgroup(dom->pid);
     if (dom->domain_id < 0) {
+        return -1;
+    }
+    if (monitor_id >= 0 && dom->domain_id != monitor_id) {
         return -1;
     }
     dom->type = ISDOMAIN;
