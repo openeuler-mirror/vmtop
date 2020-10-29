@@ -67,8 +67,10 @@ FID fields[] = {
     {"P",        FIELDS_DISPLAY, 5,  GF(processor)                },
     {"%ST",      FIELDS_DISPLAY, 8,  GDF(steal)                   },
     {"%GUE",     FIELDS_DISPLAY, 8,  GDF(gtime)                   },
-    {"%HYP",     FIELDS_DISPLAY, 8,  NULL                         }
+    {"%HYP",     FIELDS_DISPLAY, 8,  NULL                         },
+    {"WAITmax",  FIELDS_HIDDEN,  9,  GF(st_max)                   }
 #undef GDF
+#undef GF
 };
 
 int get_show_field_num(void)
