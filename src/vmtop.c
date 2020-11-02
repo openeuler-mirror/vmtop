@@ -489,7 +489,6 @@ int main(int argc, char *argv[])
             key = getch();
             if (key != ERR) {
                 parse_keys(key);
-                clear();
             }
         } else {
             usleep(delay_time * 1000000);    /* wait delay time in text mode */
