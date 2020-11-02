@@ -19,6 +19,7 @@ typedef unsigned long long u64;
 
 #define DOMAIN_NAME_MAX 256
 #define BUF_SIZE 1024
+#define MAX_VCPU_NUM 1024
 
 #define DELTA_VALUE(v) delta_ ## v
 #define DFX_VALUE(v) v, DELTA_VALUE(v)
@@ -143,6 +144,11 @@ struct domain {
         DFX_VALUE(gtime);
     struct domain *threads;
     int smp_vcpus;
+};
+
+struct domain_list {
+    struct domain *domains;
+    int num;
 };
 
 enum process_type {
