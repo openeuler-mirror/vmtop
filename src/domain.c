@@ -26,6 +26,7 @@
 #define TASK_STRING_SIZE 30
 
 int monitor_id;
+struct domain_list vcpu_list;
 
 /* domain list operation */
 void init_domains(struct domain_list *list)
@@ -47,7 +48,7 @@ void clear_domains(struct domain_list *list)
     init_domains(list);
 }
 
-static struct domain *add_domains(struct domain_list *list)
+struct domain *add_domains(struct domain_list *list)
 {
     struct domain *new_list = malloc(sizeof(struct domain) * (list->num + 1));
 
@@ -193,8 +194,8 @@ static int get_child_pid(struct domain *dom)
             get_proc_comm(&(dom->threads[i])) < 0) {
             continue;
         }
-        if (strstr(dom->threads[i].vmname, "CPU") != NULL
-            && get_vcpu_stat(&(dom->threads[i])) > 0) {
+        if (strstr(dom->threads[i].vmname, "CPU") != NULL &&
+            get_vcpu_stat(&(dom->threads[i]), &vcpu_list) >= 0) {
             dom->threads[i].type = ISVCPU;
             dom->smp_vcpus++;
         }
@@ -305,8 +306,10 @@ int refresh_domains(struct domain_list *now, struct domain_list *pre)
 
     copy_domains(now, pre);    /* save last data int pre */
     clear_domains(now);
+    if (get_vcpu_list(&vcpu_list) < 0) {
+        return -1;
+    }
     num = get_qemu_id(now);
-
     for (int i = 0; i < now->num; i++) {
         int id = now->domains[i].domain_id;
         struct domain *old_domain = get_domain_from_id(id, pre);
