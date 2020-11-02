@@ -190,8 +190,7 @@ static int get_child_pid(struct domain *dom)
         }
         dom->threads[i].type = ISTHREAD;
         dom->threads[i].ppid = dom->pid;
-        if (get_proc_stat(&(dom->threads[i])) < 0 ||
-            get_proc_comm(&(dom->threads[i])) < 0) {
+        if (get_proc_stat(&(dom->threads[i])) < 0) {
             continue;
         }
         if (strstr(dom->threads[i].vmname, "CPU") != NULL &&
@@ -212,12 +211,6 @@ static int set_domain(struct domain *dom, const char *name)
     char path[BUF_SIZE];
     char pid[PID_STRING_MAX];
     char *end = NULL;
-
-    if (len >= DOMAIN_NAME_MAX - 1) {
-        return -1;
-    }
-    strcpy(dom->vmname, name);
-    dom->vmname[len - strlen(".pid")] = '\0';
 
     if (snprintf(path, BUF_SIZE, "%s/%s", VAR_RUN_QEMU_PATH, name) < 0) {
         return -1;
@@ -241,6 +234,13 @@ static int set_domain(struct domain *dom, const char *name)
     if (get_proc_stat(dom) < 0 || get_child_pid(dom) < 0) {
         return -1;
     }
+
+    if (len >= DOMAIN_NAME_MAX - 1) {
+        return -1;
+    }
+    strcpy(dom->vmname, name);
+    dom->vmname[len - strlen(".pid")] = '\0';
+
     return 1;
 }
 
