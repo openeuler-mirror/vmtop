@@ -192,6 +192,7 @@ static void print_domain_field(struct domain *dom, int field)
         break;
     }
     /* kvm exit fields show */
+#ifdef __aarch64__
     case FD_EXTHVC:
     case FD_EXTWFE:
     case FD_EXTWFI:
@@ -213,6 +214,31 @@ static void print_domain_field(struct domain *dom, int field)
     case FD_EXTSVE:
     case FD_EXTDBG:
     case FD_EXTFAIL: {
+#else
+    case FD_PFFIXED:
+    case FD_PFGUEST:
+    case FD_INVLPG:
+    case FD_IOEXITS:
+    case FD_MMIOEXITS:
+    case FD_EXTSUM:
+    case FD_EXTHALT:
+    case FD_EXTSIG:
+    case FD_EXTIRQ:
+    case FD_EXTNMIW:
+    case FD_EXTIRQW:
+    case FD_IRQIN:
+    case FD_NMIIN:
+    case FD_TLB:
+    case FD_HOSTREL:
+    case FD_HYPERV:
+    case FD_EXTCR:
+    case FD_EXTRMSR:
+    case FD_EXTWMSR:
+    case FD_EXTAPIC:
+    case FD_EXTEPTV:
+    case FD_EXTEPTM:
+    case FD_EXTPAU: {
+#endif
         print_scr("%*llu", fields[i].align, *(u64 *)(*fields[i].get_fun)(dom));
         break;
     }

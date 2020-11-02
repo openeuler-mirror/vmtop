@@ -22,6 +22,7 @@ struct file_item vcpu_stat_stab[] = {
 #define GDF(f)  (void *)GET_NAME(f), (void *)DELTA_NAME(f), (void *)SUM_NAME(f)
 #define GF(f)   (void *)GET_NAME(f), NULL, NULL
     {"%u",   GF(pid)                      },
+#ifdef __aarch64__
     {"%llu", GDF(hvc_exit_stat)           },
     {"%llu", GDF(wfe_exit_stat)           },
     {"%llu", GDF(wfi_exit_stat)           },
@@ -43,11 +44,44 @@ struct file_item vcpu_stat_stab[] = {
     {"%llu", GDF(smc_exit_stat)           },
     {"%llu", GDF(sve_exit_stat)           },
     {"%llu", GDF(debug_exit_stat)         },
+#else
+    {"%llu", GDF(pf_fixed)                },
+    {"%llu", GDF(pf_guest)                },
+    {"%llu", GDF(tlb_flush)               },
+    {"%llu", GDF(invlpg)                  },
+    {"%llu", GDF(exits)                   },
+    {"%llu", GDF(io_exits)                },
+    {"%llu", GDF(mmio_exits)              },
+    {"%llu", GDF(signal_exits)            },
+    {"%llu", GDF(irq_window_exits)        },
+    {"%llu", GDF(nmi_window_exits)        },
+    {"%llu", GDF(halt_exits)              },
+    {"%llu", GDF(halt_successful_poll)    },
+    {"%llu", GDF(halt_attempted_poll)     },
+    {"%llu", GDF(halt_wakeup)             },
+    {"%llu", GDF(request_irq_exits)       },
+    {"%llu", GDF(irq_exits)               },
+    {"%llu", GDF(host_state_reload)       },
+    {"%llu", GDF(fpu_reload)              },
+    {"%llu", GDF(insn_emulation)          },
+    {"%llu", GDF(insn_emulation_fail)     },
+    {"%llu", GDF(hypercalls)              },
+    {"%llu", GDF(irq_injections)          },
+    {"%llu", GDF(nmi_injections)          },
+    {"%llu", GDF(cr_exits)                },
+    {"%llu", GDF(msr_rd_exits)            },
+    {"%llu", GDF(msr_wr_exits)            },
+    {"%llu", GDF(apic_wr_exits)           },
+    {"%llu", GDF(ept_vio_exits)           },
+    {"%llu", GDF(ept_mis_exits)           },
+    {"%llu", GDF(pause_exits)             },
+#endif
     {"%llu", GDF(steal)                   },
     {"%llu", GF(st_max)                   },
     {"%llu", GDF(vcpu_utime)              },
     {"%llu", GDF(vcpu_stime)              },
     {"%llu", GDF(gtime)                   }
+
 #undef GF
 #undef GDF
 };
