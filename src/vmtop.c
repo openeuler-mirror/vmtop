@@ -195,7 +195,18 @@ static void print_domain_field(struct domain *dom, int field)
     case FD_EXTIRQ:
     case FD_EXTSYS64:
     case FD_EXTMABT:
-    case FD_EXTSUM: {
+    case FD_EXTSUM:
+    case FD_EXTERR:
+    case FD_EXTUKN:
+    case FD_EXTCP153:
+    case FD_EXTCP156:
+    case FD_EXTCP14M:
+    case FD_EXTCP14L:
+    case FD_EXTCP146:
+    case FD_EXTSMC:
+    case FD_EXTSVE:
+    case FD_EXTDBG:
+    case FD_EXTFAIL: {
         print_scr("%*llu", fields[i].align, *(u64 *)(*fields[i].get_fun)(dom));
         break;
     }
