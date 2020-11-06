@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.1
-Release: 0
+Release: 1
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
