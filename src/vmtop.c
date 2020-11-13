@@ -65,12 +65,13 @@ static void init_parameter(void)
     delay_time = 1;    /* default delay 1s between display */
     scr_row_size = 2048;    /* defualt size row */
     scr_col_size = 1024;    /* default size col */
+    monitor_id = -1;    /* default monitor all domains */
 }
 
 static void parse_args(int argc, char *argv[])
 {
     int opt;
-    char *arg_ops = "hvHd:n:b";
+    char *arg_ops = "hvHd:n:bp:";
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
@@ -101,6 +102,10 @@ static void parse_args(int argc, char *argv[])
         }
         case 'b': {
             scr_mode = TEXT_MODE;
+            break;
+        }
+        case 'p': {
+            monitor_id = atoi(optarg);
             break;
         }
         default:
@@ -381,6 +386,8 @@ static void show_filter(void)
 
 static void parse_keys(int key)
 {
+    int scroll_size = 1;
+
     switch (key) {
     case 'f': {
         show_filter();
@@ -390,17 +397,25 @@ static void parse_keys(int key)
         quit_flag = !quit_flag;
         break;
     }
+    case KEY_NPAGE: {
+        /* move pagesize - 6 for beauty */
+        scroll_size = scr_row_size - 6;
+    }
     case KEY_UP: {
         int task_num = thread_mode ? get_task_num(&scr_cur) : scr_cur.num;
 
-        begin_task++;
+        begin_task += scroll_size;
         if (begin_task > task_num) {
             begin_task = task_num;
         }
         break;
     }
+    case KEY_PPAGE: {
+        /* move pagesize - 6 for beauty */
+        scroll_size = scr_row_size - 6;
+    }
     case KEY_DOWN: {
-        begin_task--;
+        begin_task -= scroll_size;
         if (begin_task < 1) {
             begin_task = 1;
         }
