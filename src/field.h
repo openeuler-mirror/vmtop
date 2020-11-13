@@ -47,6 +47,7 @@ enum fields_type {
     FD_ST,
     FD_GUE,
     FD_HYP,
+    FD_WAITMAX,
     FD_END
 };
 

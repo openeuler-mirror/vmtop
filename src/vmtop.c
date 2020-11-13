@@ -239,6 +239,12 @@ static void print_domain_field(struct domain *dom, int field)
         print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
         break;
     }
+    case FD_WAITMAX: {
+        u64 st_max = *(u64 *)(*fields[i].get_fun)(dom);
+        /* show Max Scheduling Delay time in ms unit */
+        print_scr("%*.3f", fields[i].align, st_max / 1000000.0f);
+        break;
+    }
     default:
         break;
     }
