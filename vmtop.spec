@@ -1,10 +1,11 @@
 Name: vmtop
 Version: 1.1
-Release: 0
+Release: 1
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
 URL: https://gitee.com/openeuler/vmtop
+ExcludeArch: x86_64
 
 Source:https://gitee.com/openeuler/vmtop/repository/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
@@ -57,6 +58,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Thu Nov 26 2020 Jiajun Chen <1250062498@qq.com> -1.1-1
+- spec: disable x86 build in SP1 version
+
 * Sat Oct 10 2020 Jiajun Chen <1250062498@qq.com> -1.1-0
 - spec: modify source url
 
