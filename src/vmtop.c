@@ -54,6 +54,7 @@ static void init_parameter(void)
 {
     init_domains(&scr_cur);
     init_domains(&scr_pre);
+    init_domains(&vcpu_list);
     begin_task = 1;
     begin_field = 1;
     thread_mode = 0;    /* default not to show threads */
@@ -488,7 +489,6 @@ int main(int argc, char *argv[])
             key = getch();
             if (key != ERR) {
                 parse_keys(key);
-                clear();
             }
         } else {
             usleep(delay_time * 1000000);    /* wait delay time in text mode */
