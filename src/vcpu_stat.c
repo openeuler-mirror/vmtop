@@ -57,7 +57,6 @@ const int vcpu_stat_size = sizeof(vcpu_stat_stab) / sizeof(struct file_item);
 int get_vcpu_list(struct domain_list *list)
 {
     char buf[BUF_SIZE];
-    unsigned int pid;
     FILE *fp = NULL;
 
     fp = fopen(KVM_VCPU_STAT_PATH, "r");
