@@ -1,0 +1,84 @@
+From c38bd9e30368d521554dc56cea094d6ff2312636 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Thu, 29 Oct 2020 14:18:42 +0800
+Subject: [PATCH 4/8] args: add -p option
+
+Add -p option to specify a virtual machine that vmtop monitors.
+Usage:
+vmtop -p vmid
+vmid means domain's id.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/domain.c | 5 +++++
+ src/domain.h | 2 ++
+ src/vmtop.c  | 7 ++++++-
+ 3 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/src/domain.c b/src/domain.c
+index ac15d53..8683115 100644
+--- a/src/domain.c
++++ b/src/domain.c
+@@ -25,6 +25,8 @@
+ #define CGROUP_PATH_SIZE 30
+ #define TASK_STRING_SIZE 30
+ 
++int monitor_id;
++
+ /* domain list operation */
+ void init_domains(struct domain_list *list)
+ {
+@@ -231,6 +233,9 @@ static int set_domain(struct domain *dom, const char *name)
+     if (dom->domain_id < 0) {
+         return -1;
+     }
++    if (monitor_id >= 0 && dom->domain_id != monitor_id) {
++        return -1;
++    }
+     dom->type = ISDOMAIN;
+     if (get_proc_stat(dom) < 0 || get_child_pid(dom) < 0) {
+         return -1;
+diff --git a/src/domain.h b/src/domain.h
+index da3b20b..f4ce86b 100644
+--- a/src/domain.h
++++ b/src/domain.h
+@@ -24,4 +24,6 @@ struct domain_list {
+ int refresh_domains(struct domain_list *now, struct domain_list *pre);
+ void init_domains(struct domain_list *list);
+ int get_task_num(struct domain_list *list);
++
++extern int monitor_id;
+ #endif
+diff --git a/src/vmtop.c b/src/vmtop.c
+index d22ddfd..f4ef9ab 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -65,12 +65,13 @@ static void init_parameter(void)
+     delay_time = 1;    /* default delay 1s between display */
+     scr_row_size = 2048;    /* defualt size row */
+     scr_col_size = 1024;    /* default size col */
++    monitor_id = -1;    /* default monitor all domains */
+ }
+ 
+ static void parse_args(int argc, char *argv[])
+ {
+     int opt;
+-    char *arg_ops = "hvHd:n:b";
++    char *arg_ops = "hvHd:n:bp:";
+     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
+         switch (opt) {
+         case 'd': {
+@@ -103,6 +104,10 @@ static void parse_args(int argc, char *argv[])
+             scr_mode = TEXT_MODE;
+             break;
+         }
++        case 'p': {
++            monitor_id = atoi(optarg);
++            break;
++        }
+         default:
+             exit(1);    /* exit vmtop when args are invalid */
+             break;
+-- 
+2.23.0
+

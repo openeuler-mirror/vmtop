@@ -1,0 +1,75 @@
+From d7093b894ee00a11e2fdf21c859215fcf535b2de Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Thu, 29 Oct 2020 14:08:47 +0800
+Subject: [PATCH 3/8] vcp_stat: add Max Scheduling Delay time items to display
+
+Add WAITmax item to display, which represent "Max Scheduling Delay".
+Set default width to 9 spaces, and default hidden.
+And WAITmax unit is ms.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/field.c     | 4 +++-
+ src/field.h     | 1 +
+ src/vcpu_stat.c | 1 +
+ src/vmtop.c     | 6 ++++++
+ 4 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/src/field.c b/src/field.c
+index 8793977..7ff0d44 100644
+--- a/src/field.c
++++ b/src/field.c
+@@ -67,8 +67,10 @@ FID fields[] = {
+     {"P",        FIELDS_DISPLAY, 5,  GF(processor)                },
+     {"%ST",      FIELDS_DISPLAY, 8,  GDF(steal)                   },
+     {"%GUE",     FIELDS_DISPLAY, 8,  GDF(gtime)                   },
+-    {"%HYP",     FIELDS_DISPLAY, 8,  NULL                         }
++    {"%HYP",     FIELDS_DISPLAY, 8,  NULL                         },
++    {"WAITmax",  FIELDS_HIDDEN,  9,  GF(st_max)                   }
+ #undef GDF
++#undef GF
+ };
+ 
+ int get_show_field_num(void)
+diff --git a/src/field.h b/src/field.h
+index 1fc7182..3a33008 100644
+--- a/src/field.h
++++ b/src/field.h
+@@ -47,6 +47,7 @@ enum fields_type {
+     FD_ST,
+     FD_GUE,
+     FD_HYP,
++    FD_WAITMAX,
+     FD_END
+ };
+ 
+diff --git a/src/vcpu_stat.c b/src/vcpu_stat.c
+index 7ec2371..308e7bb 100644
+--- a/src/vcpu_stat.c
++++ b/src/vcpu_stat.c
+@@ -115,4 +115,5 @@ void sum_vcpu_stat(struct domain *dom, struct domain *thread)
+             (*vcpu_stat_stab[i].sum_fun)(dom, thread);
+         }
+     }
++    dom->st_max += thread->st_max;
+ }
+diff --git a/src/vmtop.c b/src/vmtop.c
+index d22ddfd..27126b9 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -234,6 +234,12 @@ static void print_domain_field(struct domain *dom, int field)
+         print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
+         break;
+     }
++    case FD_WAITMAX: {
++        u64 st_max = *(u64 *)(*fields[i].get_fun)(dom);
++        /* show Max Scheduling Delay time in ms unit */
++        print_scr("%*.3f", fields[i].align, st_max / 1000000.0f);
++        break;
++    }
+     default:
+         break;
+     }
+-- 
+2.23.0
+

@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.1
-Release: 2
+Release: 3
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
@@ -18,6 +18,15 @@ Patch0006: vcpustat-modify-vcpu-info-acquirement-from-debugfs.patch
 Patch0007: display-expand-CPU-display.patch
 Patch0008: display-add-limit-to-usage-display.patch
 Patch0009: vmtop-simplify-print_domain_field.patch
+Patch0010: vcpu_stat-add-remaining-kvm-exits-items-to-display.patch
+Patch0011: display-modify-filter-display-to-support-more-displa.patch
+Patch0012: vcp_stat-add-Max-Scheduling-Delay-time-items-to-disp.patch
+Patch0013: args-add-p-option.patch
+Patch0014: key-add-page-up-down-key-response.patch
+Patch0015: vcpu_stat-get-vcpu-stat-list-once-per-display-instea.patch
+Patch0016: proc-del-prc-pid-comm-read.patch
+Patch0017: display-del-screen-clear-after-key-response.patch
+Patch0018: codestyle-del-unused-var.patch
 
 Requires: libvirt, ncurses
 
@@ -58,6 +67,17 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Mon Dec 07 2020 Jiajun Chen <1250062498@qq.com> -1.1-3
+- vcpu_stat: add remaining kvm exits items to display
+- display: modify filter display to support more display fields items
+- vcp_stat: add Max Scheduling Delay time items to display
+- args: add -p option
+- key: add page up/down key response
+- vcpu_stat: get vcpu stat list once per display instead of per vcpu
+- proc: del /prc/pid/comm read
+- display: del screen clear after key response
+- codestyle: del unused var
+
 * Thu Nov 26 2020 Jiajun Chen <1250062498@qq.com> -1.1-2
 - spec: change disable x86 from exclude to exclusive
 
