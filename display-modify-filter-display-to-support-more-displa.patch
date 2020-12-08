@@ -1,0 +1,49 @@
+From c1083be42e3ad71971193e025c95a866a6207e7f Mon Sep 17 00:00:00 2001
+From: Jiajun Chen <1250062498@qq.com>
+Date: Wed, 28 Oct 2020 16:38:12 +0800
+Subject: [PATCH 2/8] display: modify filter display to support more display
+ fields items
+
+If display fields items is more than screen rows, some of fields items
+can't be displayed in screen.
+So, start another col to show fields items if screen can't show all content in one col.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/vmtop.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 12b073d..501cea9 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -287,11 +287,24 @@ static void show_domains(struct domain_list *list)
+  */
+ static void print_field(int high_light)
+ {
+-    int x = 3;    /* display x local */
+-    int y = 4;    /* display y local */
++    int x, y, x_local, y_local;
+     unsigned int attr_flag;
+ 
++    getyx(stdscr, y_local, x_local);    /* get cursor coordinates */
++    y = y_local;
++    x = x_local + 3;    /* leave 3 spaces in the beginning for beauty */
++
+     for (int i = 0; i < FD_END; i++) {
++        /*
++         * if y local is more than scr_row_size, fields list display will
++         * out of screen range. So start another col to show fields list
++         * with 20 intervals.
++         */
++        if (y >= scr_row_size) {
++            y = y_local;
++            x = x + 20;
++        }
++
+         attr_flag = A_NORMAL;
+         if (i == high_light) {
+             attr_flag |= A_REVERSE;     /* high light chosen field */
+-- 
+2.23.0
+

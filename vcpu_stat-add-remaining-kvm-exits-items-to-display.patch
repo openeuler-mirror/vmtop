@@ -1,0 +1,127 @@
+From 9ce07679bec0796af03f79c28aae7fb178ff7fa2 Mon Sep 17 00:00:00 2001
+From: Jiajun Chen <1250062498@qq.com>
+Date: Wed, 28 Oct 2020 15:58:04 +0800
+Subject: [PATCH 1/8] vcpu_stat: add remaining kvm exits items to display
+
+Add remaining kvm exits items to display, include:
+EXTerr, EXTukn, EXTcp153, EXTcp156, EXTcp14m,
+EXTcp14l, EXTcp146, EXTsmc, EXTsve, EXTdbg, EXTfail
+
+Set dafault width to 10 space, and set these items default hidden.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/field.c | 49 ++++++++++++++++++++++++++++++-------------------
+ src/field.h | 11 +++++++++++
+ src/vmtop.c | 13 ++++++++++++-
+ 3 files changed, 53 insertions(+), 20 deletions(-)
+
+diff --git a/src/field.c b/src/field.c
+index 1fc2fee..8793977 100644
+--- a/src/field.c
++++ b/src/field.c
+@@ -38,25 +38,36 @@ FID fields[] = {
+ #define GDF(f) (void *)GET_DELTA_NAME(f)
+ #define GF(f) (void *)GET_NAME(f)
+     /* name  .      flag     . align */
+-    {"DID",      FIELDS_DISPLAY, 5,  NULL                   },
+-    {"VM/task-name", FIELDS_DISPLAY, 14, NULL               },
+-    {"PID",      FIELDS_DISPLAY, 8,  NULL                   },
+-    {"%CPU",     FIELDS_DISPLAY, 8,  NULL                   },
+-    {"EXThvc",   FIELDS_DISPLAY, 10, GDF(hvc_exit_stat)     },
+-    {"EXTwfe",   FIELDS_DISPLAY, 10, GDF(wfe_exit_stat)     },
+-    {"EXTwfi",   FIELDS_DISPLAY, 10, GDF(wfi_exit_stat)     },
+-    {"EXTmmioU", FIELDS_DISPLAY, 10, GDF(mmio_exit_user)    },
+-    {"EXTmmioK", FIELDS_DISPLAY, 10, GDF(mmio_exit_kernel)  },
+-    {"EXTfp",    FIELDS_DISPLAY, 10, GDF(fp_asimd_exit_stat)},
+-    {"EXTirq",   FIELDS_DISPLAY, 10, GDF(irq_exit_stat)     },
+-    {"EXTsys64", FIELDS_DISPLAY, 10, GDF(sys64_exit_stat)   },
+-    {"EXTmabt",  FIELDS_DISPLAY, 10, GDF(mabt_exit_stat)    },
+-    {"EXTsum",   FIELDS_DISPLAY, 10, GDF(exits)             },
+-    {"S",        FIELDS_DISPLAY, 5,  GF(state)              },
+-    {"P",        FIELDS_DISPLAY, 5,  GF(processor)          },
+-    {"%ST",      FIELDS_DISPLAY, 8,  GDF(steal)             },
+-    {"%GUE",     FIELDS_DISPLAY, 8,  GDF(gtime)             },
+-    {"%HYP",     FIELDS_DISPLAY, 8,  NULL}
++    {"DID",      FIELDS_DISPLAY, 5,  NULL                         },
++    {"VM/task-name", FIELDS_DISPLAY, 14, NULL                     },
++    {"PID",      FIELDS_DISPLAY, 8,  NULL                         },
++    {"%CPU",     FIELDS_DISPLAY, 8,  NULL                         },
++    {"EXThvc",   FIELDS_DISPLAY, 10, GDF(hvc_exit_stat)           },
++    {"EXTwfe",   FIELDS_DISPLAY, 10, GDF(wfe_exit_stat)           },
++    {"EXTwfi",   FIELDS_DISPLAY, 10, GDF(wfi_exit_stat)           },
++    {"EXTmmioU", FIELDS_DISPLAY, 10, GDF(mmio_exit_user)          },
++    {"EXTmmioK", FIELDS_DISPLAY, 10, GDF(mmio_exit_kernel)        },
++    {"EXTfp",    FIELDS_DISPLAY, 10, GDF(fp_asimd_exit_stat)      },
++    {"EXTirq",   FIELDS_DISPLAY, 10, GDF(irq_exit_stat)           },
++    {"EXTsys64", FIELDS_DISPLAY, 10, GDF(sys64_exit_stat)         },
++    {"EXTmabt",  FIELDS_DISPLAY, 10, GDF(mabt_exit_stat)          },
++    {"EXTsum",   FIELDS_DISPLAY, 10, GDF(exits)                   },
++    {"EXTerr",   FIELDS_HIDDEN,  10, GDF(internal_error_exit_stat)},
++    {"EXTukn",   FIELDS_HIDDEN,  10, GDF(unknown_ec_exit_stat)    },
++    {"EXTcp153", FIELDS_HIDDEN,  10, GDF(cp15_32_exit_stat)       },
++    {"EXTcp156", FIELDS_HIDDEN,  10, GDF(cp15_64_exit_stat)       },
++    {"EXT14m",   FIELDS_HIDDEN,  10, GDF(cp14_mr_exit_stat)       },
++    {"EXT14l",   FIELDS_HIDDEN,  10, GDF(cp14_ls_exit_stat)       },
++    {"EXT146",   FIELDS_HIDDEN,  10, GDF(cp14_64_exit_stat)       },
++    {"EXTsmc",   FIELDS_HIDDEN,  10, GDF(smc_exit_stat)           },
++    {"EXTsve",   FIELDS_HIDDEN,  10, GDF(sve_exit_stat)           },
++    {"EXTdbg",   FIELDS_HIDDEN,  10, GDF(debug_exit_stat)         },
++    {"EXTfail",  FIELDS_HIDDEN,  10, GDF(fail_entry_exit_stat)    },
++    {"S",        FIELDS_DISPLAY, 5,  GF(state)                    },
++    {"P",        FIELDS_DISPLAY, 5,  GF(processor)                },
++    {"%ST",      FIELDS_DISPLAY, 8,  GDF(steal)                   },
++    {"%GUE",     FIELDS_DISPLAY, 8,  GDF(gtime)                   },
++    {"%HYP",     FIELDS_DISPLAY, 8,  NULL                         }
+ #undef GDF
+ };
+ 
+diff --git a/src/field.h b/src/field.h
+index 88808e7..1fc7182 100644
+--- a/src/field.h
++++ b/src/field.h
+@@ -31,6 +31,17 @@ enum fields_type {
+     FD_EXTSYS64,
+     FD_EXTMABT,
+     FD_EXTSUM,
++    FD_EXTERR,
++    FD_EXTUKN,
++    FD_EXTCP153,
++    FD_EXTCP156,
++    FD_EXTCP14M,
++    FD_EXTCP14L,
++    FD_EXTCP146,
++    FD_EXTSMC,
++    FD_EXTSVE,
++    FD_EXTDBG,
++    FD_EXTFAIL,
+     FD_STATE,
+     FD_P,
+     FD_ST,
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 12b073d..d22ddfd 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -195,7 +195,18 @@ static void print_domain_field(struct domain *dom, int field)
+     case FD_EXTIRQ:
+     case FD_EXTSYS64:
+     case FD_EXTMABT:
+-    case FD_EXTSUM: {
++    case FD_EXTSUM:
++    case FD_EXTERR:
++    case FD_EXTUKN:
++    case FD_EXTCP153:
++    case FD_EXTCP156:
++    case FD_EXTCP14M:
++    case FD_EXTCP14L:
++    case FD_EXTCP146:
++    case FD_EXTSMC:
++    case FD_EXTSVE:
++    case FD_EXTDBG:
++    case FD_EXTFAIL: {
+         print_scr("%*llu", fields[i].align, *(u64 *)(*fields[i].get_fun)(dom));
+         break;
+     }
+-- 
+2.23.0
+

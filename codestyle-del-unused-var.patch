@@ -1,0 +1,27 @@
+From 6d13d03943965d0f7c923de40d243c35105d75de Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Mon, 7 Dec 2020 15:14:02 +0800
+Subject: [PATCH] codestyle: del unused var
+
+del unused var in vcpu_stat.c
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/vcpu_stat.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/vcpu_stat.c b/src/vcpu_stat.c
+index 7009d41..5705b9a 100644
+--- a/src/vcpu_stat.c
++++ b/src/vcpu_stat.c
+@@ -57,7 +57,6 @@ const int vcpu_stat_size = sizeof(vcpu_stat_stab) / sizeof(struct file_item);
+ int get_vcpu_list(struct domain_list *list)
+ {
+     char buf[BUF_SIZE];
+-    unsigned int pid;
+     FILE *fp = NULL;
+ 
+     fp = fopen(KVM_VCPU_STAT_PATH, "r");
+-- 
+2.23.0
+
