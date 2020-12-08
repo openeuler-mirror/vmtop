@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.1
-Release: 0
+Release: 1
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
@@ -17,6 +17,8 @@ Patch0006: vcpustat-modify-vcpu-info-acquirement-from-debugfs.patch
 Patch0007: display-expand-CPU-display.patch
 Patch0008: display-add-limit-to-usage-display.patch
 Patch0009: vmtop-simplify-print_domain_field.patch
+Patch0010: vcpu_stat-add-remaining-kvm-exits-items-to-display.patch
+Patch0011: display-modify-filter-display-to-support-more-displa.patch
 
 Requires: libvirt, ncurses
 
@@ -57,6 +59,12 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Wed Oct 28 2020 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+- display: modify filter display to support more display fields items
+
+* Wed Oct 28 2020 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+- vcpu_stat: add remaining kvm exits items to display
+
 * Sat Oct 10 2020 Jiajun Chen <1250062498@qq.com> -1.1-0
 - spec: modify source url
 
