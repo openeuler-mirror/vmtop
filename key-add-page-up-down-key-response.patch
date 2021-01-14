@@ -1,0 +1,56 @@
+From 10be69aa54764c8314501fd1130d9bf8c9f859f2 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Thu, 29 Oct 2020 15:35:37 +0800
+Subject: [PATCH 3/8] key: add page up/down key response
+
+Add page up/down key response, move pagesize - 6 for beauty.
+
+Signed-off-by: Jiajun Chen <1250062498@qq.com>
+---
+ src/vmtop.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/src/vmtop.c b/src/vmtop.c
+index f4ef9ab..65181a1 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -373,6 +373,8 @@ static void show_filter(void)
+ 
+ static void parse_keys(int key)
+ {
++    int scroll_size = 1;
++
+     switch (key) {
+     case 'f': {
+         show_filter();
+@@ -382,17 +384,25 @@ static void parse_keys(int key)
+         quit_flag = !quit_flag;
+         break;
+     }
++    case KEY_NPAGE: {
++        /* move pagesize - 6 for beauty */
++        scroll_size = scr_row_size - 6;
++    }
+     case KEY_UP: {
+         int task_num = thread_mode ? get_task_num(&scr_cur) : scr_cur.num;
+ 
+-        begin_task++;
++        begin_task += scroll_size;
+         if (begin_task > task_num) {
+             begin_task = task_num;
+         }
+         break;
+     }
++    case KEY_PPAGE: {
++        /* move pagesize - 6 for beauty */
++        scroll_size = scr_row_size - 6;
++    }
+     case KEY_DOWN: {
+-        begin_task--;
++        begin_task -= scroll_size;
+         if (begin_task < 1) {
+             begin_task = 1;
+         }
+-- 
+2.27.0
+
