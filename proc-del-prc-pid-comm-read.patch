@@ -1,0 +1,120 @@
+From 11d95f0d941825ba183115cd24ab2ea2242ed805 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Mon, 2 Nov 2020 13:44:54 +0800
+Subject: [PATCH 5/8] proc: del /prc/pid/comm read
+
+The content obtained from comm file can also be obtianed from the stat file,
+So there is no need to read comm file.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/domain.c | 16 ++++++++--------
+ src/proc.c   | 36 +++++++++++++++---------------------
+ 2 files changed, 23 insertions(+), 29 deletions(-)
+
+diff --git a/src/domain.c b/src/domain.c
+index 05f85dd..7f9173d 100644
+--- a/src/domain.c
++++ b/src/domain.c
+@@ -190,8 +190,7 @@ static int get_child_pid(struct domain *dom)
+         }
+         dom->threads[i].type = ISTHREAD;
+         dom->threads[i].ppid = dom->pid;
+-        if (get_proc_stat(&(dom->threads[i])) < 0 ||
+-            get_proc_comm(&(dom->threads[i])) < 0) {
++        if (get_proc_stat(&(dom->threads[i])) < 0) {
+             continue;
+         }
+         if (strstr(dom->threads[i].vmname, "CPU") != NULL &&
+@@ -213,12 +212,6 @@ static int set_domain(struct domain *dom, const char *name)
+     char pid[PID_STRING_MAX];
+     char *end = NULL;
+ 
+-    if (len >= DOMAIN_NAME_MAX - 1) {
+-        return -1;
+-    }
+-    strcpy(dom->vmname, name);
+-    dom->vmname[len - strlen(".pid")] = '\0';
+-
+     if (snprintf(path, BUF_SIZE, "%s/%s", VAR_RUN_QEMU_PATH, name) < 0) {
+         return -1;
+     }
+@@ -241,6 +234,13 @@ static int set_domain(struct domain *dom, const char *name)
+     if (get_proc_stat(dom) < 0 || get_child_pid(dom) < 0) {
+         return -1;
+     }
++
++    if (len >= DOMAIN_NAME_MAX - 1) {
++        return -1;
++    }
++    strcpy(dom->vmname, name);
++    dom->vmname[len - strlen(".pid")] = '\0';
++
+     return 1;
+ }
+ 
+diff --git a/src/proc.c b/src/proc.c
+index 2200bf0..0263c67 100644
+--- a/src/proc.c
++++ b/src/proc.c
+@@ -70,10 +70,12 @@ int get_proc_stat(struct domain *dom)
+ {
+     char buf[BUF_SIZE];
+     char path[STAT_PATH_SIZE];
+-    char *tmp = NULL;
++    char *tmp1 = NULL;
++    char *tmp2 = NULL;
+     char *p = NULL;
+     char *p_next = NULL;
+     int i = 0;
++    int len;
+ 
+     if (dom->type == ISDOMAIN) {
+         if (snprintf(path, STAT_PATH_SIZE, "/proc/%u/stat", dom->pid) < 0) {
+@@ -89,11 +91,19 @@ int get_proc_stat(struct domain *dom)
+         return -1;
+     }
+ 
+-    /* read from state item of "...) S ..." */
+-    tmp = strrchr(buf, ')');
+-    tmp = tmp + 2;
++    /* read comm from "pid (comm) S" */
++    tmp1 = strrchr(buf, '(') + 1;
++    tmp2 = strrchr(buf, ')');
++    len = tmp2 - tmp1;
++    if (len >= DOMAIN_NAME_MAX || len < 0) {
++        return -1;
++    }
++    strncpy(dom->vmname, tmp1, len);
++    dom->vmname[len] = '\0';
+ 
+-    for (p = strtok_r(tmp, " \t\r\n", &p_next); p && i < stat_size;
++    /* read start from process state */
++    tmp2 = tmp2 + 2;
++    for (p = strtok_r(tmp2, " \t\r\n", &p_next); p && i < stat_size;
+          p = strtok_r(NULL, " \t\r\n", &p_next)) {
+         if (proc_stab[i].get_fun != NULL) {
+             sscanf(p, proc_stab[i].format, (*proc_stab[i].get_fun)(dom));
+@@ -111,19 +121,3 @@ void refresh_delta_stat(struct domain *new, struct domain *old)
+         }
+     }
+ }
+-
+-int get_proc_comm(struct domain *dom)
+-{
+-    char path[STAT_PATH_SIZE];
+-    int len;
+-
+-    if (snprintf(path, STAT_PATH_SIZE, "/proc/%u/comm", dom->pid) < 0) {
+-        return -1;
+-    }
+-
+-    len = read_file(dom->vmname, DOMAIN_NAME_MAX, path);
+-    if (len > 1) {
+-        dom->vmname[len - 1] = '\0';
+-    }
+-    return len;
+-}
+-- 
+2.27.0
+

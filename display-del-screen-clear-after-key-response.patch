@@ -1,0 +1,27 @@
+From 101713bbe26fc60721de1259df15232ccd6aab50 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Mon, 2 Nov 2020 13:47:22 +0800
+Subject: [PATCH 6/8] display: del screen clear after key response
+
+Clear will cause display to refresh off, so del clear afer key response.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/vmtop.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 693779c..0137fdd 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -489,7 +489,6 @@ int main(int argc, char *argv[])
+             key = getch();
+             if (key != ERR) {
+                 parse_keys(key);
+-                clear();
+             }
+         } else {
+             usleep(delay_time * 1000000);    /* wait delay time in text mode */
+-- 
+2.27.0
+
