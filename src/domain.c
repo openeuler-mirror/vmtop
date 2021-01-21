@@ -253,6 +253,10 @@ static int check_pid_file(const char *d_name)
     int extern_len = strlen(extern_name);
     int len = strlen(d_name);
 
+    if (len <= extern_len) {
+        return -1;
+    }
+
     return strcmp(d_name + len - extern_len, extern_name);
 }
 
