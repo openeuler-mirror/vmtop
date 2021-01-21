@@ -1,0 +1,29 @@
+From 360a23478dda391daa056c08a7c564f5b350e43a Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Thu, 21 Jan 2021 10:57:09 +0800
+Subject: [PATCH] bugfix: add check to avoid invalid ptr for strcmp
+
+If len of d_name is less than "pid", it will pass a invalid ptr
+to strcmp, which will cause crash.
+---
+ src/domain.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/domain.c b/src/domain.c
+index 7f9173d..f8dea48 100644
+--- a/src/domain.c
++++ b/src/domain.c
+@@ -253,6 +253,10 @@ static int check_pid_file(const char *d_name)
+     int extern_len = strlen(extern_name);
+     int len = strlen(d_name);
+ 
++    if (len <= extern_len) {
++        return -1;
++    }
++
+     return strcmp(d_name + len - extern_len, extern_name);
+ }
+ 
+-- 
+2.27.0
+
