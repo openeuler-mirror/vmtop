@@ -54,6 +54,7 @@ static void init_parameter(void)
 {
     init_domains(&scr_cur);
     init_domains(&scr_pre);
+    init_domains(&vcpu_list);
     begin_task = 1;
     begin_field = 1;
     thread_mode = 0;    /* default not to show threads */
@@ -65,12 +66,13 @@ static void init_parameter(void)
     delay_time = 1;    /* default delay 1s between display */
     scr_row_size = 2048;    /* defualt size row */
     scr_col_size = 1024;    /* default size col */
+    monitor_id = -1;    /* default monitor all domains */
 }
 
 static void parse_args(int argc, char *argv[])
 {
     int opt;
-    char *arg_ops = "hvHd:n:b";
+    char *arg_ops = "hvHd:n:bp:";
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
@@ -101,6 +103,10 @@ static void parse_args(int argc, char *argv[])
         }
         case 'b': {
             scr_mode = TEXT_MODE;
+            break;
+        }
+        case 'p': {
+            monitor_id = atoi(optarg);
             break;
         }
         default:
@@ -195,7 +201,18 @@ static void print_domain_field(struct domain *dom, int field)
     case FD_EXTIRQ:
     case FD_EXTSYS64:
     case FD_EXTMABT:
-    case FD_EXTSUM: {
+    case FD_EXTSUM:
+    case FD_EXTERR:
+    case FD_EXTUKN:
+    case FD_EXTCP153:
+    case FD_EXTCP156:
+    case FD_EXTCP14M:
+    case FD_EXTCP14L:
+    case FD_EXTCP146:
+    case FD_EXTSMC:
+    case FD_EXTSVE:
+    case FD_EXTDBG:
+    case FD_EXTFAIL: {
         print_scr("%*llu", fields[i].align, *(u64 *)(*fields[i].get_fun)(dom));
         break;
     }
@@ -221,6 +238,12 @@ static void print_domain_field(struct domain *dom, int field)
         double usage = (double)hyp_time * 100 / 1000000000.0f / delay_time;
 
         print_scr("%*.1f", fields[i].align, justify_usage(usage, dom));
+        break;
+    }
+    case FD_WAITMAX: {
+        u64 st_max = *(u64 *)(*fields[i].get_fun)(dom);
+        /* show Max Scheduling Delay time in ms unit */
+        print_scr("%*.3f", fields[i].align, st_max / 1000000.0f);
         break;
     }
     default:
@@ -287,11 +310,24 @@ static void show_domains(struct domain_list *list)
  */
 static void print_field(int high_light)
 {
-    int x = 3;    /* display x local */
-    int y = 4;    /* display y local */
+    int x, y, x_local, y_local;
     unsigned int attr_flag;
 
+    getyx(stdscr, y_local, x_local);    /* get cursor coordinates */
+    y = y_local;
+    x = x_local + 3;    /* leave 3 spaces in the beginning for beauty */
+
     for (int i = 0; i < FD_END; i++) {
+        /*
+         * if y local is more than scr_row_size, fields list display will
+         * out of screen range. So start another col to show fields list
+         * with 20 intervals.
+         */
+        if (y >= scr_row_size) {
+            y = y_local;
+            x = x + 20;
+        }
+
         attr_flag = A_NORMAL;
         if (i == high_light) {
             attr_flag |= A_REVERSE;     /* high light chosen field */
@@ -357,6 +393,8 @@ static void show_filter(void)
 
 static void parse_keys(int key)
 {
+    int scroll_size = 1;
+
     switch (key) {
     case 'f': {
         show_filter();
@@ -366,17 +404,25 @@ static void parse_keys(int key)
         quit_flag = !quit_flag;
         break;
     }
+    case KEY_NPAGE: {
+        /* move pagesize - 6 for beauty */
+        scroll_size = scr_row_size - 6;
+    }
     case KEY_UP: {
         int task_num = thread_mode ? get_task_num(&scr_cur) : scr_cur.num;
 
-        begin_task++;
+        begin_task += scroll_size;
         if (begin_task > task_num) {
             begin_task = task_num;
         }
         break;
     }
+    case KEY_PPAGE: {
+        /* move pagesize - 6 for beauty */
+        scroll_size = scr_row_size - 6;
+    }
     case KEY_DOWN: {
-        begin_task--;
+        begin_task -= scroll_size;
         if (begin_task < 1) {
             begin_task = 1;
         }
@@ -443,7 +489,6 @@ int main(int argc, char *argv[])
             key = getch();
             if (key != ERR) {
                 parse_keys(key);
-                clear();
             }
         } else {
             usleep(delay_time * 1000000);    /* wait delay time in text mode */

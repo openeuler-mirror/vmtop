@@ -70,10 +70,12 @@ int get_proc_stat(struct domain *dom)
 {
     char buf[BUF_SIZE];
     char path[STAT_PATH_SIZE];
-    char *tmp = NULL;
+    char *tmp1 = NULL;
+    char *tmp2 = NULL;
     char *p = NULL;
     char *p_next = NULL;
     int i = 0;
+    int len;
 
     if (dom->type == ISDOMAIN) {
         if (snprintf(path, STAT_PATH_SIZE, "/proc/%u/stat", dom->pid) < 0) {
@@ -89,11 +91,19 @@ int get_proc_stat(struct domain *dom)
         return -1;
     }
 
-    /* read from state item of "...) S ..." */
-    tmp = strrchr(buf, ')');
-    tmp = tmp + 2;
+    /* read comm from "pid (comm) S" */
+    tmp1 = strrchr(buf, '(') + 1;
+    tmp2 = strrchr(buf, ')');
+    len = tmp2 - tmp1;
+    if (len >= DOMAIN_NAME_MAX || len < 0) {
+        return -1;
+    }
+    strncpy(dom->vmname, tmp1, len);
+    dom->vmname[len] = '\0';
 
-    for (p = strtok_r(tmp, " \t\r\n", &p_next); p && i < stat_size;
+    /* read start from process state */
+    tmp2 = tmp2 + 2;
+    for (p = strtok_r(tmp2, " \t\r\n", &p_next); p && i < stat_size;
          p = strtok_r(NULL, " \t\r\n", &p_next)) {
         if (proc_stab[i].get_fun != NULL) {
             sscanf(p, proc_stab[i].format, (*proc_stab[i].get_fun)(dom));
@@ -110,20 +120,4 @@ void refresh_delta_stat(struct domain *new, struct domain *old)
             (*proc_stab[i].delta_fun)(new, old);
         }
     }
-}
-
-int get_proc_comm(struct domain *dom)
-{
-    char path[STAT_PATH_SIZE];
-    int len;
-
-    if (snprintf(path, STAT_PATH_SIZE, "/proc/%u/comm", dom->pid) < 0) {
-        return -1;
-    }
-
-    len = read_file(dom->vmname, DOMAIN_NAME_MAX, path);
-    if (len > 1) {
-        dom->vmname[len - 1] = '\0';
-    }
-    return len;
 }

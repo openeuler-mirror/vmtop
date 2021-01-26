@@ -25,6 +25,9 @@
 #define CGROUP_PATH_SIZE 30
 #define TASK_STRING_SIZE 30
 
+int monitor_id;
+struct domain_list vcpu_list;
+
 /* domain list operation */
 void init_domains(struct domain_list *list)
 {
@@ -45,7 +48,7 @@ void clear_domains(struct domain_list *list)
     init_domains(list);
 }
 
-static struct domain *add_domains(struct domain_list *list)
+struct domain *add_domains(struct domain_list *list)
 {
     struct domain *new_list = malloc(sizeof(struct domain) * (list->num + 1));
 
@@ -187,12 +190,11 @@ static int get_child_pid(struct domain *dom)
         }
         dom->threads[i].type = ISTHREAD;
         dom->threads[i].ppid = dom->pid;
-        if (get_proc_stat(&(dom->threads[i])) < 0 ||
-            get_proc_comm(&(dom->threads[i])) < 0) {
+        if (get_proc_stat(&(dom->threads[i])) < 0) {
             continue;
         }
-        if (strstr(dom->threads[i].vmname, "CPU") != NULL
-            && get_vcpu_stat(&(dom->threads[i])) > 0) {
+        if (strstr(dom->threads[i].vmname, "CPU") != NULL &&
+            get_vcpu_stat(&(dom->threads[i]), &vcpu_list) >= 0) {
             dom->threads[i].type = ISVCPU;
             dom->smp_vcpus++;
         }
@@ -210,12 +212,6 @@ static int set_domain(struct domain *dom, const char *name)
     char pid[PID_STRING_MAX];
     char *end = NULL;
 
-    if (len >= DOMAIN_NAME_MAX - 1) {
-        return -1;
-    }
-    strcpy(dom->vmname, name);
-    dom->vmname[len - strlen(".pid")] = '\0';
-
     if (snprintf(path, BUF_SIZE, "%s/%s", VAR_RUN_QEMU_PATH, name) < 0) {
         return -1;
     }
@@ -231,10 +227,20 @@ static int set_domain(struct domain *dom, const char *name)
     if (dom->domain_id < 0) {
         return -1;
     }
+    if (monitor_id >= 0 && dom->domain_id != monitor_id) {
+        return -1;
+    }
     dom->type = ISDOMAIN;
     if (get_proc_stat(dom) < 0 || get_child_pid(dom) < 0) {
         return -1;
     }
+
+    if (len >= DOMAIN_NAME_MAX - 1) {
+        return -1;
+    }
+    strcpy(dom->vmname, name);
+    dom->vmname[len - strlen(".pid")] = '\0';
+
     return 1;
 }
 
@@ -246,6 +252,10 @@ static int check_pid_file(const char *d_name)
     char *extern_name = ".pid";
     int extern_len = strlen(extern_name);
     int len = strlen(d_name);
+
+    if (len <= extern_len) {
+        return -1;
+    }
 
     return strcmp(d_name + len - extern_len, extern_name);
 }
@@ -300,8 +310,10 @@ int refresh_domains(struct domain_list *now, struct domain_list *pre)
 
     copy_domains(now, pre);    /* save last data int pre */
     clear_domains(now);
+    if (get_vcpu_list(&vcpu_list) < 0) {
+        return -1;
+    }
     num = get_qemu_id(now);
-
     for (int i = 0; i < now->num; i++) {
         int id = now->domains[i].domain_id;
         struct domain *old_domain = get_domain_from_id(id, pre);
