@@ -16,12 +16,11 @@
 #include <unistd.h>
 #include "type.h"
 
-struct domain_list {
-    struct domain *domains;
-    int num;
-};
-
 int refresh_domains(struct domain_list *now, struct domain_list *pre);
 void init_domains(struct domain_list *list);
+void clear_domains(struct domain_list *list);
+struct domain *add_domains(struct domain_list *list);
 int get_task_num(struct domain_list *list);
+extern int monitor_id;
+extern struct domain_list vcpu_list;
 #endif

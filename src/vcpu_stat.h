@@ -42,7 +42,8 @@ GET_DELTA_FUN(vcpu_utime)
 GET_DELTA_FUN(vcpu_stime)
 GET_DELTA_FUN(gtime)
 
-int get_vcpu_stat(struct domain *dom);
+int get_vcpu_list(struct domain_list *list);
+int get_vcpu_stat(struct domain *dom, struct domain_list *vcpu_list);
 void refresh_delta_vcpu_stat(struct domain *new, struct domain *old);
 void sum_vcpu_stat(struct domain *dom, struct domain *thread);
 #endif

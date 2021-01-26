@@ -12,6 +12,9 @@
  ********************************************************************************/
 
 #include "field.h"
+#include "type.h"
+#include "vcpu_stat.h"
+#include "proc.h"
 
 const char *summary_text = ""
     "vmtop - %s - %s\n"
@@ -32,26 +35,42 @@ const char *version_text = ""
     "vmtop-%s\n";
 
 FID fields[] = {
+#define GDF(f) (void *)GET_DELTA_NAME(f)
+#define GF(f) (void *)GET_NAME(f)
     /* name  .      flag     . align */
-    {"DID",      FIELDS_DISPLAY, 5  },
-    {"VM/task-name", FIELDS_DISPLAY, 14 },
-    {"PID",      FIELDS_DISPLAY, 8  },
-    {"%CPU",     FIELDS_DISPLAY, 6  },
-    {"EXThvc",   FIELDS_DISPLAY, 10 },
-    {"EXTwfe",   FIELDS_DISPLAY, 10 },
-    {"EXTwfi",   FIELDS_DISPLAY, 10 },
-    {"EXTmmioU", FIELDS_DISPLAY, 10 },
-    {"EXTmmioK", FIELDS_DISPLAY, 10 },
-    {"EXTfp",    FIELDS_DISPLAY, 10 },
-    {"EXTirq",   FIELDS_DISPLAY, 10 },
-    {"EXTsys64", FIELDS_DISPLAY, 10 },
-    {"EXTmabt",  FIELDS_DISPLAY, 10 },
-    {"EXTsum",   FIELDS_DISPLAY, 10 },
-    {"S",        FIELDS_DISPLAY, 5  },
-    {"P",        FIELDS_DISPLAY, 5  },
-    {"%ST",      FIELDS_DISPLAY, 8  },
-    {"%GUE",     FIELDS_DISPLAY, 8  },
-    {"%HYP",     FIELDS_DISPLAY, 8  }
+    {"DID",      FIELDS_DISPLAY, 5,  NULL                         },
+    {"VM/task-name", FIELDS_DISPLAY, 14, NULL                     },
+    {"PID",      FIELDS_DISPLAY, 8,  NULL                         },
+    {"%CPU",     FIELDS_DISPLAY, 8,  NULL                         },
+    {"EXThvc",   FIELDS_DISPLAY, 10, GDF(hvc_exit_stat)           },
+    {"EXTwfe",   FIELDS_DISPLAY, 10, GDF(wfe_exit_stat)           },
+    {"EXTwfi",   FIELDS_DISPLAY, 10, GDF(wfi_exit_stat)           },
+    {"EXTmmioU", FIELDS_DISPLAY, 10, GDF(mmio_exit_user)          },
+    {"EXTmmioK", FIELDS_DISPLAY, 10, GDF(mmio_exit_kernel)        },
+    {"EXTfp",    FIELDS_DISPLAY, 10, GDF(fp_asimd_exit_stat)      },
+    {"EXTirq",   FIELDS_DISPLAY, 10, GDF(irq_exit_stat)           },
+    {"EXTsys64", FIELDS_DISPLAY, 10, GDF(sys64_exit_stat)         },
+    {"EXTmabt",  FIELDS_DISPLAY, 10, GDF(mabt_exit_stat)          },
+    {"EXTsum",   FIELDS_DISPLAY, 10, GDF(exits)                   },
+    {"EXTerr",   FIELDS_HIDDEN,  10, GDF(internal_error_exit_stat)},
+    {"EXTukn",   FIELDS_HIDDEN,  10, GDF(unknown_ec_exit_stat)    },
+    {"EXTcp153", FIELDS_HIDDEN,  10, GDF(cp15_32_exit_stat)       },
+    {"EXTcp156", FIELDS_HIDDEN,  10, GDF(cp15_64_exit_stat)       },
+    {"EXT14m",   FIELDS_HIDDEN,  10, GDF(cp14_mr_exit_stat)       },
+    {"EXT14l",   FIELDS_HIDDEN,  10, GDF(cp14_ls_exit_stat)       },
+    {"EXT146",   FIELDS_HIDDEN,  10, GDF(cp14_64_exit_stat)       },
+    {"EXTsmc",   FIELDS_HIDDEN,  10, GDF(smc_exit_stat)           },
+    {"EXTsve",   FIELDS_HIDDEN,  10, GDF(sve_exit_stat)           },
+    {"EXTdbg",   FIELDS_HIDDEN,  10, GDF(debug_exit_stat)         },
+    {"EXTfail",  FIELDS_HIDDEN,  10, GDF(fail_entry_exit_stat)    },
+    {"S",        FIELDS_DISPLAY, 5,  GF(state)                    },
+    {"P",        FIELDS_DISPLAY, 5,  GF(processor)                },
+    {"%ST",      FIELDS_DISPLAY, 8,  GDF(steal)                   },
+    {"%GUE",     FIELDS_DISPLAY, 8,  GDF(gtime)                   },
+    {"%HYP",     FIELDS_DISPLAY, 8,  NULL                         },
+    {"WAITmax",  FIELDS_HIDDEN,  9,  GF(st_max)                   }
+#undef GDF
+#undef GF
 };
 
 int get_show_field_num(void)

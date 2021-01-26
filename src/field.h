@@ -31,11 +31,23 @@ enum fields_type {
     FD_EXTSYS64,
     FD_EXTMABT,
     FD_EXTSUM,
+    FD_EXTERR,
+    FD_EXTUKN,
+    FD_EXTCP153,
+    FD_EXTCP156,
+    FD_EXTCP14M,
+    FD_EXTCP14L,
+    FD_EXTCP146,
+    FD_EXTSMC,
+    FD_EXTSVE,
+    FD_EXTDBG,
+    FD_EXTFAIL,
     FD_STATE,
     FD_P,
     FD_ST,
     FD_GUE,
     FD_HYP,
+    FD_WAITMAX,
     FD_END
 };
 
@@ -43,6 +55,7 @@ typedef struct _field {
     const char *name;
     int display_flag;
     int align;
+    void *(*get_fun)(void *);
 } FID;
 
 extern FID fields[];
