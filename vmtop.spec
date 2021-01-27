@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.1
-Release: 3
+Release: 4
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
@@ -27,6 +27,7 @@ Patch0015: vcpu_stat-get-vcpu-stat-list-once-per-display-instea.patch
 Patch0016: proc-del-prc-pid-comm-read.patch
 Patch0017: display-del-screen-clear-after-key-response.patch
 Patch0018: codestyle-del-unused-var.patch
+Patch0019: bugfix-add-check-to-avoid-invalid-ptr-for-strcmp.patch
 
 Requires: libvirt, ncurses
 
@@ -67,6 +68,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Wed 27 Jan 2021 Jiajun Chen <1250062498@qq.com> -1.1-4
+- bugfix: add check to avoid invalid ptr for strcmp
+
 * Mon Dec 07 2020 Jiajun Chen <1250062498@qq.com> -1.1-3
 - vcpu_stat: add remaining kvm exits items to display
 - display: modify filter display to support more display fields items
