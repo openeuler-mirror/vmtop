@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.1
-Release: 2
+Release: 3
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
@@ -27,6 +27,7 @@ Patch0016: proc-del-prc-pid-comm-read.patch
 Patch0017: display-del-screen-clear-after-key-response.patch
 Patch0018: arch-add-x86-kvm-exits-items.patch
 Patch0019: codestyle-del-unused-var.patch
+Patch0020: bugfix-add-check-to-avoid-invalid-ptr-for-strcmp.patch
 
 Requires: libvirt, ncurses
 
@@ -67,6 +68,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Thu Jan 21 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+- bugfix: add check to avoid invalid ptr for strcmp
+
 * Thu 14 Jan 2021 Jiajun Chen <1250062498@qq.com> -1.1-2
 - vcp_stat: add Max Scheduling Delay time items to display
 - args: add -p option
