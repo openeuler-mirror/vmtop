@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([vmtop], [1.0], [virt@openeuler.org])
+AC_INIT([vmtop], [1.1], [virt@openeuler.org])
 AC_CONFIG_SRCDIR([src/vmtop.c])
 AC_CONFIG_HEADERS([config.h])
 
