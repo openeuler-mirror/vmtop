@@ -76,9 +76,9 @@ static void parse_args(int argc, char *argv[])
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
-            delay_time = atoi(optarg);
-            if (delay_time < 1) {
-                delay_time = 1;
+            delay_time = str_to_int(optarg);
+            if (delay_time < 0) {
+                exit(1);
             }
             break;
         }
@@ -95,9 +95,9 @@ static void parse_args(int argc, char *argv[])
             exit(0);
         }
         case 'n': {
-            display_loop = atoi(optarg);
-            if (display_loop == 0) {
-                display_loop = -1;
+            display_loop = str_to_int(optarg);
+            if (display_loop < 0) {
+                exit(1);
             }
             break;
         }
@@ -106,7 +106,10 @@ static void parse_args(int argc, char *argv[])
             break;
         }
         case 'p': {
-            monitor_id = atoi(optarg);
+            monitor_id = str_to_int(optarg);
+            if (monitor_id < 0) {
+                exit(1);
+            }
             break;
         }
         default:
