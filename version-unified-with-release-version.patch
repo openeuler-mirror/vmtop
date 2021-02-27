@@ -1,0 +1,30 @@
+From 76f5626a69007a2f3509bb29548e7cd305699fb0 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sat, 27 Feb 2021 14:27:31 +0800
+Subject: [PATCH] version: unified with release version
+
+Currently, vmtop release version has been update to 1.1, but
+version in configure.ac is still 1.0. So, update release
+version to configure.ac.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index a968ae8..0acb1b7 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -2,7 +2,7 @@
+ # Process this file with autoconf to produce a configure script.
+ 
+ AC_PREREQ([2.69])
+-AC_INIT([vmtop], [1.0], [virt@openeuler.org])
++AC_INIT([vmtop], [1.1], [virt@openeuler.org])
+ AC_CONFIG_SRCDIR([src/vmtop.c])
+ AC_CONFIG_HEADERS([config.h])
+ 
+-- 
+2.27.0
+
