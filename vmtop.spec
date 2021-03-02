@@ -29,6 +29,7 @@ Patch0018: arch-add-x86-kvm-exits-items.patch
 Patch0019: codestyle-del-unused-var.patch
 Patch0020: bugfix-add-check-to-avoid-invalid-ptr-for-strcmp.patch
 Patch0021: input-add-invalid-opt-check-in-input.patch
+Patch0022: version-unified-with-release-version.patch
 
 Requires: libvirt, ncurses
 
@@ -69,6 +70,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+- version: unified with release version
+
 * Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
 - input: add invalid opt check in input
 
