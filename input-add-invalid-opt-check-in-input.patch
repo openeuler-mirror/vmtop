@@ -1,0 +1,97 @@
+From 4cddb3a35907a5d8bdc5af3d92c2dae1e02eafa8 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sat, 27 Feb 2021 14:23:13 +0800
+Subject: [PATCH] input: add invalid opt check in input
+
+Add invalid opt check while vmtop start with opts.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/utils.c | 19 +++++++++++++++++++
+ src/utils.h |  1 +
+ src/vmtop.c | 17 ++++++++++-------
+ 3 files changed, 30 insertions(+), 7 deletions(-)
+
+diff --git a/src/utils.c b/src/utils.c
+index 3cb1146..4b6983a 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -56,3 +56,22 @@ int get_time_str(char *buf, int bufsize)
+     }
+     return 1;
+ }
++
++int str_to_int(const char *str)
++{
++    long int sl;
++    char *end = NULL;
++    int ret = -1;
++
++    sl = strtol(str, &end, 10);
++    /* if str starts or ends with non numeric char */
++    if ((end == str) || (*end != '\0')) {
++        printf("Invalid data!\n");
++    } else if ((sl > INT_MAX) || (sl < INT_MIN)) {
++        printf("Out of range!\n");
++    } else {
++        ret = (int)sl;
++    }
++
++    return ret;
++}
+diff --git a/src/utils.h b/src/utils.h
+index 11d3001..c8d0d01 100644
+--- a/src/utils.h
++++ b/src/utils.h
+@@ -15,5 +15,6 @@
+ 
+ int read_file(char *buf, int bufsize, const char *path);
+ int get_time_str(char *buf, int bufsize);
++int str_to_int(const char *str);
+ 
+ #endif
+diff --git a/src/vmtop.c b/src/vmtop.c
+index f5fd4bd..4f45bef 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -76,9 +76,9 @@ static void parse_args(int argc, char *argv[])
+     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
+         switch (opt) {
+         case 'd': {
+-            delay_time = atoi(optarg);
+-            if (delay_time < 1) {
+-                delay_time = 1;
++            delay_time = str_to_int(optarg);
++            if (delay_time < 0) {
++                exit(1);
+             }
+             break;
+         }
+@@ -95,9 +95,9 @@ static void parse_args(int argc, char *argv[])
+             exit(0);
+         }
+         case 'n': {
+-            display_loop = atoi(optarg);
+-            if (display_loop == 0) {
+-                display_loop = -1;
++            display_loop = str_to_int(optarg);
++            if (display_loop < 0) {
++                exit(1);
+             }
+             break;
+         }
+@@ -106,7 +106,10 @@ static void parse_args(int argc, char *argv[])
+             break;
+         }
+         case 'p': {
+-            monitor_id = atoi(optarg);
++            monitor_id = str_to_int(optarg);
++            if (monitor_id < 0) {
++                exit(1);
++            }
+             break;
+         }
+         default:
+-- 
+2.27.0
+
