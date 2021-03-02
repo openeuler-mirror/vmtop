@@ -56,3 +56,22 @@ int get_time_str(char *buf, int bufsize)
     }
     return 1;
 }
+
+int str_to_int(const char *str)
+{
+    long int sl;
+    char *end = NULL;
+    int ret = -1;
+
+    sl = strtol(str, &end, 10);
+    /* if str starts or ends with non numeric char */
+    if ((end == str) || (*end != '\0')) {
+        printf("Invalid data!\n");
+    } else if ((sl > INT_MAX) || (sl < INT_MIN)) {
+        printf("Out of range!\n");
+    } else {
+        ret = (int)sl;
+    }
+
+    return ret;
+}
