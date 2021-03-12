@@ -63,33 +63,6 @@ struct domain *add_domains(struct domain_list *list)
     return &(list->domains[list->num - 1]);
 }
 
-static void copy_domains(struct domain_list *now, struct domain_list *pre)
-{
-    clear_domains(pre);
-    pre->num = now->num;
-    if (pre->num <= 0) {
-        return;
-    }
-    pre->domains = malloc(sizeof(struct domain) * pre->num);
-    if (pre->domains == NULL) {
-        pre->num = 0;
-        return;
-    }
-    memcpy(pre->domains, now->domains, sizeof(struct domain) * pre->num);
-    for (int i = 0; i < pre->num; i++) {
-        if (pre->domains[i].nlwp <= 0) {
-            continue;
-        }
-        pre->domains[i].threads = malloc(sizeof(struct domain) *
-                                         pre->domains[i].nlwp);
-        if (pre->domains[i].threads == NULL) {
-            continue;
-        }
-        memcpy(pre->domains[i].threads, now->domains[i].threads,
-               sizeof(struct domain) * pre->domains[i].nlwp);
-    }
-}
-
 static void pop_domains(struct domain_list *list)
 {
     list->num--;
@@ -308,8 +281,12 @@ int refresh_domains(struct domain_list *now, struct domain_list *pre)
 {
     int num;
 
-    copy_domains(now, pre);    /* save last data int pre */
-    clear_domains(now);
+    /* save data in pre domain_list */
+    clear_domains(pre);
+    pre->num = now->num;
+    pre->domains = now->domains;
+    init_domains(now);
+
     if (get_vcpu_list(&vcpu_list) < 0) {
         return -1;
     }
