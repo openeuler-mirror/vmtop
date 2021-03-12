@@ -1,0 +1,60 @@
+From 406dae88df5ce989f9166929522e7ec5c5899fce Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Fri, 12 Mar 2021 14:30:26 +0800
+Subject: [PATCH] vcpu_list: pre malloc vcpu list to improve performance
+
+It costs a lot of time to malloc and memset vcpu_list while getting a new vcpu.
+And vcpu num is limited to MAX_VCPU_NUM = 1024, so pre malloc MAX_VCPU_NUM mem,
+which will improve vmtop cpu usage a lot.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/vcpu_stat.c | 5 +++--
+ src/vmtop.c     | 1 +
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/vcpu_stat.c b/src/vcpu_stat.c
+index 222e4d2..1578ec4 100644
+--- a/src/vcpu_stat.c
++++ b/src/vcpu_stat.c
+@@ -97,7 +97,7 @@ int get_vcpu_list(struct domain_list *list)
+     if (!fp) {
+         return -1;
+     }
+-    clear_domains(list);
++    list->num = 0;
+     while (fgets(buf, BUF_SIZE - 1, fp)) {
+         char *p = NULL;
+         char *p_next = NULL;
+@@ -107,7 +107,7 @@ int get_vcpu_list(struct domain_list *list)
+         if (list->num >= MAX_VCPU_NUM) {
+             break;
+         }
+-        struct domain *dom = add_domains(list);
++        struct domain *dom = &(list->domains[list->num]);
+         for (p = strtok_r(buf, " \t\r\n", &p_next); p && i < vcpu_stat_size;
+              p = strtok_r(NULL, " \t\r\n", &p_next)) {
+             if (vcpu_stat_stab[i].get_fun) {
+@@ -116,6 +116,7 @@ int get_vcpu_list(struct domain_list *list)
+             }
+             i++;
+         }
++        list->num++;
+     }
+     fclose(fp);
+     return list->num;
+diff --git a/src/vmtop.c b/src/vmtop.c
+index f5fd4bd..9e273c6 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -55,6 +55,7 @@ static void init_parameter(void)
+     init_domains(&scr_cur);
+     init_domains(&scr_pre);
+     init_domains(&vcpu_list);
++    vcpu_list.domains = malloc(sizeof(struct domain) * MAX_VCPU_NUM);
+     begin_task = 1;
+     begin_field = 1;
+     thread_mode = 0;    /* default not to show threads */
+-- 
+2.27.0
+
