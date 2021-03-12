@@ -55,6 +55,7 @@ static void init_parameter(void)
     init_domains(&scr_cur);
     init_domains(&scr_pre);
     init_domains(&vcpu_list);
+    vcpu_list.domains = malloc(sizeof(struct domain) * MAX_VCPU_NUM);
     begin_task = 1;
     begin_field = 1;
     thread_mode = 0;    /* default not to show threads */
