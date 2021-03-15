@@ -55,11 +55,12 @@ struct domain *add_domains(struct domain_list *list)
     if (new_list == NULL) {
         return NULL;
     }
-    memset(new_list, 0, sizeof(struct domain) * (list->num + 1));
     memcpy(new_list, list->domains, sizeof(struct domain) * list->num);
     free(list->domains);
     list->domains = new_list;
     list->num++;
+    memset(&(list->domains[list->num - 1]), 0, sizeof(struct domain));
+
     return &(list->domains[list->num - 1]);
 }
 
