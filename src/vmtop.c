@@ -60,11 +60,10 @@ static void init_parameter(void)
     begin_field = 1;
     thread_mode = 0;    /* default not to show threads */
     quit_flag = 0;
-    delay_time = 1;    /* default delay 1s between display */
     display_loop = -1;
     scr_mode = TERM_MODE;
     quit_flag = 0;
-    delay_time = 1;    /* default delay 1s between display */
+    delay_time = 3;    /* default delay 1s between display */
     scr_row_size = 2048;    /* defualt size row */
     scr_col_size = 1024;    /* default size col */
     monitor_id = -1;    /* default monitor all domains */
