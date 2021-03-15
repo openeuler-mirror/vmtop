@@ -1,0 +1,35 @@
+From 23915d6eff1ba63c5a9967a519879225312ead01 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Mon, 15 Mar 2021 20:03:18 +0800
+Subject: [PATCH] performance: change memset location
+
+There is no need to clear all mem in add_domains, beacause memcpy will
+write the front section. We only need to clear the mem in the end, which
+will improve the performance.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/domain.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/domain.c b/src/domain.c
+index b8c527a..977cabe 100644
+--- a/src/domain.c
++++ b/src/domain.c
+@@ -55,11 +55,12 @@ struct domain *add_domains(struct domain_list *list)
+     if (new_list == NULL) {
+         return NULL;
+     }
+-    memset(new_list, 0, sizeof(struct domain) * (list->num + 1));
+     memcpy(new_list, list->domains, sizeof(struct domain) * list->num);
+     free(list->domains);
+     list->domains = new_list;
+     list->num++;
++    memset(&(list->domains[list->num - 1]), 0, sizeof(struct domain));
++
+     return &(list->domains[list->num - 1]);
+ }
+ 
+-- 
+2.27.0
+
