@@ -1,0 +1,33 @@
+From 3e87175d5a82ddefe353327310c253627add6c60 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Mon, 15 Mar 2021 14:04:06 +0800
+Subject: [PATCH] keyboard: change wait time to 3s
+
+Currently, key wait time is 1s, which is too short to display vm-exit status.
+So, change it to 3s.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/vmtop.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 9e273c6..071ac9a 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -60,11 +60,10 @@ static void init_parameter(void)
+     begin_field = 1;
+     thread_mode = 0;    /* default not to show threads */
+     quit_flag = 0;
+-    delay_time = 1;    /* default delay 1s between display */
+     display_loop = -1;
+     scr_mode = TERM_MODE;
+     quit_flag = 0;
+-    delay_time = 1;    /* default delay 1s between display */
++    delay_time = 3;    /* default delay 1s between display */
+     scr_row_size = 2048;    /* defualt size row */
+     scr_col_size = 1024;    /* default size col */
+     monitor_id = -1;    /* default monitor all domains */
+-- 
+2.27.0
+
