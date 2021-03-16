@@ -86,7 +86,7 @@ struct domain {
     long int
         alarm,
         rss;
-    unsigned int
+    unsigned long
         flags,
         min_flt,
         cmin_flt,

@@ -19,46 +19,9 @@
 #define STAT_PATH_SIZE 40
 
 struct file_item proc_stab[] = {
-#define GDF(f)   (void *)GET_NAME(f), (void *)DELTA_NAME(f), NULL
-#define GF(f)    (void *)GET_NAME(f), NULL, NULL
-    {"%c", GF(state)},
-    {"%d", GF(ppid)},
-    {"%d", GF(pgrd)},
-    {"%*d", NULL, NULL, NULL},
-    {"%*d", NULL, NULL, NULL},
-    {"%*d", NULL, NULL, NULL},
-    {"%lu", GF(flags)},
-    {"%lu", GF(min_flt)},
-    {"%lu", GF(cmin_flt)},
-    {"%lu", GF(maj_flt)},
-    {"%lu", GF(cmaj_flt)},
+#define GDF(f)   NULL, (void *)DELTA_NAME(f), NULL
     {"%llu", GDF(utime)},
-    {"%llu", GDF(stime)},
-    {"%llu", GF(cutime)},
-    {"%llu", GF(cstime)},
-    {"%*ld", NULL, NULL, NULL},
-    {"%*ld", NULL, NULL, NULL},
-    {"%d", GF(nlwp)},
-    {"%ld", GF(alarm)},
-    {"%llu", GF(start_time)},
-    {"%lu", GF(vsize)},
-    {"%ld", GF(rss)},
-    {"%lu", GF(rss_rlim)},
-    {"%*lu", NULL, NULL, NULL},
-    {"%*lu", NULL, NULL, NULL},
-    {"%*lu", NULL, NULL, NULL},
-    {"%*lu", NULL, NULL, NULL},
-    {"%*lu", NULL, NULL, NULL},
-    {"%*s", NULL, NULL, NULL},    /* discard signal */
-    {"%*s", NULL, NULL, NULL},    /* discard blocked */
-    {"%*s", NULL, NULL, NULL},    /* discard sigignore */
-    {"%*s", NULL, NULL, NULL},    /* discard sigcatch */
-    {"%*lu", NULL, NULL, NULL},
-    {"%*u", NULL, NULL, NULL},    /* dsicard nswap */
-    {"%*u", NULL, NULL, NULL},    /* discard cnswap */
-    {"%*d", NULL, NULL, NULL},
-    {"%d", GF(processor)}
-#undef GF
+    {"%llu", GDF(stime)}
 #undef GDF
 };
 
@@ -70,9 +33,6 @@ int get_proc_stat(struct domain *dom)
     char path[STAT_PATH_SIZE];
     char *tmp1 = NULL;
     char *tmp2 = NULL;
-    char *p = NULL;
-    char *p_next = NULL;
-    int i = 0;
     int len;
 
     if (dom->type == ISDOMAIN) {
@@ -100,14 +60,27 @@ int get_proc_stat(struct domain *dom)
     dom->vmname[len] = '\0';
 
     /* read start from process state */
-    tmp2 = tmp2 + 2;
-    for (p = strtok_r(tmp2, " \t\r\n", &p_next); p && i < stat_size;
-         p = strtok_r(NULL, " \t\r\n", &p_next)) {
-        if (proc_stab[i].get_fun != NULL) {
-            sscanf(p, proc_stab[i].format, (*proc_stab[i].get_fun)(dom));
-        }
-        ++i;
-    }
+    sscanf(tmp2 + 2,
+           "%c "
+           "%d %d %*d %*d %*d "
+           "%lu "
+           "%lu %lu %lu %lu "
+           "%llu %llu %llu %llu "
+           "%*d %*d "
+           "%d %ld "
+           "%llu %lu %ld %lu "
+           "%*u %*u %*u %*u %*u "
+           "%*s %*s %*s %*s "
+           "%*u %*u %*u %*d "
+           "%d",
+           &(dom->state),
+           &(dom->ppid), &(dom->pgrd),
+           &(dom->flags),
+           &(dom->min_flt), &(dom->cmin_flt), &(dom->maj_flt), &(dom->cmaj_flt),
+           &(dom->utime), &(dom->stime), &(dom->cutime), &(dom->cstime),
+           &(dom->nlwp), &(dom->alarm),
+           &(dom->start_time), &(dom->vsize), &(dom->rss), &(dom->rss_rlim),
+           &(dom->processor));
     return 1;
 }
 
