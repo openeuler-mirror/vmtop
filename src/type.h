@@ -81,15 +81,9 @@ struct domain {
     int
         ppid,
         pgrd,
-        session,
-        tty,
-        tpgid,
         nlwp,
-        exit_signal,
         processor;
     long int
-        priority,
-        nice,
         alarm,
         rss;
     unsigned int
@@ -99,15 +93,7 @@ struct domain {
         maj_flt,
         cmaj_flt,
         vsize,
-        rss_rlim,
-        start_code,
-        end_code,
-        start_stack,
-        kstk_esp,
-        kstk_eip,
-        rtprio,
-        sched,
-        wchan;
+        rss_rlim;
     u64
         DFX_VALUE(utime),
         DFX_VALUE(stime),

@@ -24,9 +24,9 @@ struct file_item proc_stab[] = {
     {"%c", GF(state)},
     {"%d", GF(ppid)},
     {"%d", GF(pgrd)},
-    {"%d", GF(session)},
-    {"%d", GF(tty)},
-    {"%d", GF(tpgid)},
+    {"%*d", NULL, NULL, NULL},
+    {"%*d", NULL, NULL, NULL},
+    {"%*d", NULL, NULL, NULL},
     {"%lu", GF(flags)},
     {"%lu", GF(min_flt)},
     {"%lu", GF(cmin_flt)},
@@ -36,30 +36,28 @@ struct file_item proc_stab[] = {
     {"%llu", GDF(stime)},
     {"%llu", GF(cutime)},
     {"%llu", GF(cstime)},
-    {"%ld", GF(priority)},
-    {"%ld", GF(nice)},
+    {"%*ld", NULL, NULL, NULL},
+    {"%*ld", NULL, NULL, NULL},
     {"%d", GF(nlwp)},
     {"%ld", GF(alarm)},
     {"%llu", GF(start_time)},
     {"%lu", GF(vsize)},
     {"%ld", GF(rss)},
     {"%lu", GF(rss_rlim)},
-    {"%lu", GF(start_code)},
-    {"%lu", GF(end_code)},
-    {"%lu", GF(start_stack)},
-    {"%lu", GF(kstk_esp)},
-    {"%lu", GF(kstk_eip)},
+    {"%*lu", NULL, NULL, NULL},
+    {"%*lu", NULL, NULL, NULL},
+    {"%*lu", NULL, NULL, NULL},
+    {"%*lu", NULL, NULL, NULL},
+    {"%*lu", NULL, NULL, NULL},
     {"%*s", NULL, NULL, NULL},    /* discard signal */
     {"%*s", NULL, NULL, NULL},    /* discard blocked */
     {"%*s", NULL, NULL, NULL},    /* discard sigignore */
     {"%*s", NULL, NULL, NULL},    /* discard sigcatch */
-    {"%lu", GF(wchan)},
+    {"%*lu", NULL, NULL, NULL},
     {"%*u", NULL, NULL, NULL},    /* dsicard nswap */
     {"%*u", NULL, NULL, NULL},    /* discard cnswap */
-    {"%d", GF(exit_signal)},
-    {"%d", GF(processor)},
-    {"%lu", GF(rtprio)},
-    {"%lu", GF(sched)}
+    {"%*d", NULL, NULL, NULL},
+    {"%d", GF(processor)}
 #undef GF
 #undef GDF
 };
