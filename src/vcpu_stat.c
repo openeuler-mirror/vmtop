@@ -97,7 +97,7 @@ int get_vcpu_list(struct domain_list *list)
     if (!fp) {
         return -1;
     }
-    clear_domains(list);
+    list->num = 0;
     while (fgets(buf, BUF_SIZE - 1, fp)) {
         char *p = NULL;
         char *p_next = NULL;
@@ -107,7 +107,7 @@ int get_vcpu_list(struct domain_list *list)
         if (list->num >= MAX_VCPU_NUM) {
             break;
         }
-        struct domain *dom = add_domains(list);
+        struct domain *dom = &(list->domains[list->num]);
         for (p = strtok_r(buf, " \t\r\n", &p_next); p && i < vcpu_stat_size;
              p = strtok_r(NULL, " \t\r\n", &p_next)) {
             if (vcpu_stat_stab[i].get_fun) {
@@ -116,6 +116,7 @@ int get_vcpu_list(struct domain_list *list)
             }
             i++;
         }
+        list->num++;
     }
     fclose(fp);
     return list->num;

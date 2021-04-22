@@ -24,12 +24,11 @@ int read_file(char *buf, int bufsize, const char *path)
 {
     int fd;
     int len;
-    char mpath[PATH_MAX];
 
-    if (strlen(path) > PATH_MAX - 1 || realpath(path, mpath) == NULL) {
+    if (strlen(path) > PATH_MAX - 1) {
         return -1;
     }
-    fd = open(mpath, O_RDONLY, 0);
+    fd = open(path, O_RDONLY, 0);
     if (fd == -1) {
         return -1;
     }
