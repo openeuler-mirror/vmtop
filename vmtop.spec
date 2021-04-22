@@ -30,6 +30,7 @@ Patch0019: codestyle-del-unused-var.patch
 Patch0020: bugfix-add-check-to-avoid-invalid-ptr-for-strcmp.patch
 Patch0021: input-add-invalid-opt-check-in-input.patch
 Patch0022: version-unified-with-release-version.patch
+Patch0023: input-change-wait-mechanism-for-input.patch
 
 Requires: libvirt, ncurses
 
@@ -70,6 +71,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+- input: change wait mechanism for input
+
 * Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
 - version: unified with release version
 
