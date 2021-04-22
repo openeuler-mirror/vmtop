@@ -1,0 +1,311 @@
+From 1219cb4895fa582d5712c469c5dfc511ee64de15 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Mon, 2 Nov 2020 19:07:29 +0800
+Subject: [PATCH] arch: add x86 kvm exits items
+
+add x86 support for vmtop
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/field.c     | 26 ++++++++++++++++++++++++++
+ src/field.h     | 26 ++++++++++++++++++++++++++
+ src/type.h      | 33 +++++++++++++++++++++++++++++++++
+ src/vcpu_stat.c | 34 ++++++++++++++++++++++++++++++++++
+ src/vcpu_stat.h | 33 +++++++++++++++++++++++++++++++++
+ src/vmtop.c     | 26 ++++++++++++++++++++++++++
+ 6 files changed, 178 insertions(+)
+
+diff --git a/src/field.c b/src/field.c
+index 7ff0d44..418d642 100644
+--- a/src/field.c
++++ b/src/field.c
+@@ -42,6 +42,7 @@ FID fields[] = {
+     {"VM/task-name", FIELDS_DISPLAY, 14, NULL                     },
+     {"PID",      FIELDS_DISPLAY, 8,  NULL                         },
+     {"%CPU",     FIELDS_DISPLAY, 8,  NULL                         },
++#ifdef __aarch64__
+     {"EXThvc",   FIELDS_DISPLAY, 10, GDF(hvc_exit_stat)           },
+     {"EXTwfe",   FIELDS_DISPLAY, 10, GDF(wfe_exit_stat)           },
+     {"EXTwfi",   FIELDS_DISPLAY, 10, GDF(wfi_exit_stat)           },
+@@ -63,6 +64,31 @@ FID fields[] = {
+     {"EXTsve",   FIELDS_HIDDEN,  10, GDF(sve_exit_stat)           },
+     {"EXTdbg",   FIELDS_HIDDEN,  10, GDF(debug_exit_stat)         },
+     {"EXTfail",  FIELDS_HIDDEN,  10, GDF(fail_entry_exit_stat)    },
++#else
++    {"PFfix",    FIELDS_HIDDEN,  10, GDF(pf_fixed)                },
++    {"PFgu",     FIELDS_HIDDEN,  10, GDF(pf_guest)                },
++    {"INvlpg",   FIELDS_HIDDEN,  10, GDF(invlpg)                  },
++    {"EXTio",    FIELDS_HIDDEN,  10, GDF(io_exits)                },
++    {"EXTmmio",  FIELDS_HIDDEN,  10, GDF(mmio_exits)              },
++    {"EXTsum",   FIELDS_DISPLAY, 10, GDF(exits)                   },
++    {"EXThalt",  FIELDS_HIDDEN,  10, GDF(halt_exits)              },
++    {"EXTsig",   FIELDS_HIDDEN,  10, GDF(signal_exits)            },
++    {"EXTirq",   FIELDS_HIDDEN,  10, GDF(irq_exits)               },
++    {"EXTnmiW",  FIELDS_HIDDEN,  10, GDF(nmi_window_exits)        },
++    {"EXTirqW",  FIELDS_HIDDEN,  10, GDF(irq_window_exits)        },
++    {"IrqIn",    FIELDS_HIDDEN,  10, GDF(irq_injections)          },
++    {"NmiIn",    FIELDS_HIDDEN,  10, GDF(nmi_injections)          },
++    {"TLBfl",    FIELDS_HIDDEN,  10, GDF(tlb_flush)               },
++    {"HostReL",  FIELDS_HIDDEN,  10, GDF(host_state_reload)       },
++    {"Hyperv",   FIELDS_HIDDEN,  10, GDF(hypercalls)              },
++    {"EXTcr",    FIELDS_HIDDEN,  10, GDF(cr_exits)                },
++    {"EXTrmsr",  FIELDS_HIDDEN,  10, GDF(msr_rd_exits)            },
++    {"EXTwmsr",  FIELDS_HIDDEN,  10, GDF(msr_wr_exits)            },
++    {"EXTapic",  FIELDS_HIDDEN,  10, GDF(apic_wr_exits)           },
++    {"EXTeptv",  FIELDS_DISPLAY, 10, GDF(ept_vio_exits)           },
++    {"EXTeptm",  FIELDS_HIDDEN,  10, GDF(ept_mis_exits)           },
++    {"EXTpau",   FIELDS_DISPLAY, 10, GDF(pause_exits)             },
++#endif
+     {"S",        FIELDS_DISPLAY, 5,  GF(state)                    },
+     {"P",        FIELDS_DISPLAY, 5,  GF(processor)                },
+     {"%ST",      FIELDS_DISPLAY, 8,  GDF(steal)                   },
+diff --git a/src/field.h b/src/field.h
+index 3a33008..8ce047a 100644
+--- a/src/field.h
++++ b/src/field.h
+@@ -21,6 +21,7 @@ enum fields_type {
+     FD_VMNAME,
+     FD_PID,
+     FD_CPU,
++#ifdef __aarch64__
+     FD_EXTHVC,
+     FD_EXTWFE,
+     FD_EXTWFI,
+@@ -42,6 +43,31 @@ enum fields_type {
+     FD_EXTSVE,
+     FD_EXTDBG,
+     FD_EXTFAIL,
++#else
++    FD_PFFIXED,
++    FD_PFGUEST,
++    FD_INVLPG,
++    FD_IOEXITS,
++    FD_MMIOEXITS,
++    FD_EXTSUM,
++    FD_EXTHALT,
++    FD_EXTSIG,
++    FD_EXTIRQ,
++    FD_EXTNMIW,
++    FD_EXTIRQW,
++    FD_IRQIN,
++    FD_NMIIN,
++    FD_TLB,
++    FD_HOSTREL,
++    FD_HYPERV,
++    FD_EXTCR,
++    FD_EXTRMSR,
++    FD_EXTWMSR,
++    FD_EXTAPIC,
++    FD_EXTEPTV,
++    FD_EXTEPTM,
++    FD_EXTPAU,
++#endif
+     FD_STATE,
+     FD_P,
+     FD_ST,
+diff --git a/src/type.h b/src/type.h
+index 40b7287..3c08387 100644
+--- a/src/type.h
++++ b/src/type.h
+@@ -116,6 +116,7 @@ struct domain {
+         start_time;
+     /* vcpu_stat items */
+     u64
++#ifdef __aarch64__
+         DFX_VALUE(hvc_exit_stat),
+         DFX_VALUE(wfe_exit_stat),
+         DFX_VALUE(wfi_exit_stat),
+@@ -137,6 +138,38 @@ struct domain {
+         DFX_VALUE(smc_exit_stat),
+         DFX_VALUE(sve_exit_stat),
+         DFX_VALUE(debug_exit_stat),
++#else
++        DFX_VALUE(pf_fixed),
++        DFX_VALUE(pf_guest),
++        DFX_VALUE(tlb_flush),
++        DFX_VALUE(invlpg),
++        DFX_VALUE(exits),
++        DFX_VALUE(io_exits),
++        DFX_VALUE(mmio_exits),
++        DFX_VALUE(signal_exits),
++        DFX_VALUE(irq_window_exits),
++        DFX_VALUE(nmi_window_exits),
++        DFX_VALUE(halt_exits),
++        DFX_VALUE(halt_successful_poll),
++        DFX_VALUE(halt_attempted_poll),
++        DFX_VALUE(halt_wakeup),
++        DFX_VALUE(request_irq_exits),
++        DFX_VALUE(irq_exits),
++        DFX_VALUE(host_state_reload),
++        DFX_VALUE(fpu_reload),
++        DFX_VALUE(insn_emulation),
++        DFX_VALUE(insn_emulation_fail),
++        DFX_VALUE(hypercalls),
++        DFX_VALUE(irq_injections),
++        DFX_VALUE(nmi_injections),
++        DFX_VALUE(cr_exits),
++        DFX_VALUE(msr_rd_exits),
++        DFX_VALUE(msr_wr_exits),
++        DFX_VALUE(apic_wr_exits),
++        DFX_VALUE(ept_vio_exits),
++        DFX_VALUE(ept_mis_exits),
++        DFX_VALUE(pause_exits),
++#endif
+         DFX_VALUE(steal),
+         st_max,
+         DFX_VALUE(vcpu_utime),
+diff --git a/src/vcpu_stat.c b/src/vcpu_stat.c
+index 5705b9a..222e4d2 100644
+--- a/src/vcpu_stat.c
++++ b/src/vcpu_stat.c
+@@ -22,6 +22,7 @@ struct file_item vcpu_stat_stab[] = {
+ #define GDF(f)  (void *)GET_NAME(f), (void *)DELTA_NAME(f), (void *)SUM_NAME(f)
+ #define GF(f)   (void *)GET_NAME(f), NULL, NULL
+     {"%u",   GF(pid)                      },
++#ifdef __aarch64__
+     {"%llu", GDF(hvc_exit_stat)           },
+     {"%llu", GDF(wfe_exit_stat)           },
+     {"%llu", GDF(wfi_exit_stat)           },
+@@ -43,11 +44,44 @@ struct file_item vcpu_stat_stab[] = {
+     {"%llu", GDF(smc_exit_stat)           },
+     {"%llu", GDF(sve_exit_stat)           },
+     {"%llu", GDF(debug_exit_stat)         },
++#else
++    {"%llu", GDF(pf_fixed)                },
++    {"%llu", GDF(pf_guest)                },
++    {"%llu", GDF(tlb_flush)               },
++    {"%llu", GDF(invlpg)                  },
++    {"%llu", GDF(exits)                   },
++    {"%llu", GDF(io_exits)                },
++    {"%llu", GDF(mmio_exits)              },
++    {"%llu", GDF(signal_exits)            },
++    {"%llu", GDF(irq_window_exits)        },
++    {"%llu", GDF(nmi_window_exits)        },
++    {"%llu", GDF(halt_exits)              },
++    {"%llu", GDF(halt_successful_poll)    },
++    {"%llu", GDF(halt_attempted_poll)     },
++    {"%llu", GDF(halt_wakeup)             },
++    {"%llu", GDF(request_irq_exits)       },
++    {"%llu", GDF(irq_exits)               },
++    {"%llu", GDF(host_state_reload)       },
++    {"%llu", GDF(fpu_reload)              },
++    {"%llu", GDF(insn_emulation)          },
++    {"%llu", GDF(insn_emulation_fail)     },
++    {"%llu", GDF(hypercalls)              },
++    {"%llu", GDF(irq_injections)          },
++    {"%llu", GDF(nmi_injections)          },
++    {"%llu", GDF(cr_exits)                },
++    {"%llu", GDF(msr_rd_exits)            },
++    {"%llu", GDF(msr_wr_exits)            },
++    {"%llu", GDF(apic_wr_exits)           },
++    {"%llu", GDF(ept_vio_exits)           },
++    {"%llu", GDF(ept_mis_exits)           },
++    {"%llu", GDF(pause_exits)             },
++#endif
+     {"%llu", GDF(steal)                   },
+     {"%llu", GF(st_max)                   },
+     {"%llu", GDF(vcpu_utime)              },
+     {"%llu", GDF(vcpu_stime)              },
+     {"%llu", GDF(gtime)                   }
++
+ #undef GF
+ #undef GDF
+ };
+diff --git a/src/vcpu_stat.h b/src/vcpu_stat.h
+index edbef86..9b3f4c2 100644
+--- a/src/vcpu_stat.h
++++ b/src/vcpu_stat.h
+@@ -15,6 +15,7 @@
+ 
+ /* vcpu_stat items get fun */
+ GET_VALUE(pid)
++#ifdef __aarch64__
+ GET_DELTA_FUN(hvc_exit_stat)
+ GET_DELTA_FUN(wfe_exit_stat)
+ GET_DELTA_FUN(wfi_exit_stat)
+@@ -36,6 +37,38 @@ GET_DELTA_FUN(cp14_64_exit_stat)
+ GET_DELTA_FUN(smc_exit_stat)
+ GET_DELTA_FUN(sve_exit_stat)
+ GET_DELTA_FUN(debug_exit_stat)
++#else
++GET_DELTA_FUN(pf_fixed)
++GET_DELTA_FUN(pf_guest)
++GET_DELTA_FUN(tlb_flush)
++GET_DELTA_FUN(invlpg)
++GET_DELTA_FUN(exits)
++GET_DELTA_FUN(io_exits)
++GET_DELTA_FUN(mmio_exits)
++GET_DELTA_FUN(signal_exits)
++GET_DELTA_FUN(irq_window_exits)
++GET_DELTA_FUN(nmi_window_exits)
++GET_DELTA_FUN(halt_exits)
++GET_DELTA_FUN(halt_successful_poll)
++GET_DELTA_FUN(halt_attempted_poll)
++GET_DELTA_FUN(halt_wakeup)
++GET_DELTA_FUN(request_irq_exits)
++GET_DELTA_FUN(irq_exits)
++GET_DELTA_FUN(host_state_reload)
++GET_DELTA_FUN(fpu_reload)
++GET_DELTA_FUN(insn_emulation)
++GET_DELTA_FUN(insn_emulation_fail)
++GET_DELTA_FUN(hypercalls)
++GET_DELTA_FUN(irq_injections)
++GET_DELTA_FUN(nmi_injections)
++GET_DELTA_FUN(cr_exits)
++GET_DELTA_FUN(msr_rd_exits)
++GET_DELTA_FUN(msr_wr_exits)
++GET_DELTA_FUN(apic_wr_exits)
++GET_DELTA_FUN(ept_vio_exits)
++GET_DELTA_FUN(ept_mis_exits)
++GET_DELTA_FUN(pause_exits)
++#endif
+ GET_DELTA_FUN(steal)
+ GET_VALUE(st_max)
+ GET_DELTA_FUN(vcpu_utime)
+diff --git a/src/vmtop.c b/src/vmtop.c
+index 6c36c4c..4f45bef 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -195,6 +195,7 @@ static void print_domain_field(struct domain *dom, int field)
+         break;
+     }
+     /* kvm exit fields show */
++#ifdef __aarch64__
+     case FD_EXTHVC:
+     case FD_EXTWFE:
+     case FD_EXTWFI:
+@@ -216,6 +217,31 @@ static void print_domain_field(struct domain *dom, int field)
+     case FD_EXTSVE:
+     case FD_EXTDBG:
+     case FD_EXTFAIL: {
++#else
++    case FD_PFFIXED:
++    case FD_PFGUEST:
++    case FD_INVLPG:
++    case FD_IOEXITS:
++    case FD_MMIOEXITS:
++    case FD_EXTSUM:
++    case FD_EXTHALT:
++    case FD_EXTSIG:
++    case FD_EXTIRQ:
++    case FD_EXTNMIW:
++    case FD_EXTIRQW:
++    case FD_IRQIN:
++    case FD_NMIIN:
++    case FD_TLB:
++    case FD_HOSTREL:
++    case FD_HYPERV:
++    case FD_EXTCR:
++    case FD_EXTRMSR:
++    case FD_EXTWMSR:
++    case FD_EXTAPIC:
++    case FD_EXTEPTV:
++    case FD_EXTEPTM:
++    case FD_EXTPAU: {
++#endif
+         print_scr("%*llu", fields[i].align, *(u64 *)(*fields[i].get_fun)(dom));
+         break;
+     }
+-- 
+2.27.0
+

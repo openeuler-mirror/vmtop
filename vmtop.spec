@@ -1,11 +1,10 @@
 Name: vmtop
 Version: 1.1
-Release: 5
+Release: 6
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
 URL: https://gitee.com/openeuler/vmtop
-ExclusiveArch: aarch64
 
 Source:https://gitee.com/openeuler/vmtop/repository/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
@@ -30,6 +29,7 @@ Patch0018: codestyle-del-unused-var.patch
 Patch0019: bugfix-add-check-to-avoid-invalid-ptr-for-strcmp.patch
 Patch0020: version-unified-with-release-version.patch
 Patch0021: input-add-invalid-opt-check-in-input.patch
+Patch0022: arch-add-x86-kvm-exits-items.patch
 
 Requires: libvirt, ncurses
 
@@ -70,6 +70,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Thu 22 Apr 2021 Jiajun Chen <1250062498@qq.com> -1.1-6
+- arch: add x86 kvm exits items
+
 * Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
 - version: unified with release version
 - input: add invalid opt check in input
