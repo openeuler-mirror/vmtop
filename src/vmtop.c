@@ -492,6 +492,8 @@ int main(int argc, char *argv[])
     if (scr_mode == TERM_MODE) {
         print_scr = printw;
         init_screen();
+        /* set getch wait for delay time */
+        wtimeout(stdscr, delay_time * 1000);
     } else {
         print_scr = printf;
     }
@@ -510,11 +512,7 @@ int main(int argc, char *argv[])
         show_domains(&scr_cur);
 
         if (scr_mode == TERM_MODE) {
-            /*
-             * set getch wait for delay time
-             * if timeout return ERR and continue
-             */
-            halfdelay(delay_time * 10);
+            /* if timeout return ERR and continue */
             key = getch();
             if (key != ERR) {
                 parse_keys(key);
