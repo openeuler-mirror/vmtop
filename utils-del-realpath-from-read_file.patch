@@ -1,0 +1,35 @@
+From 6f48c7f25e6db54941c110517ff25648d6287ec8 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Tue, 16 Mar 2021 20:04:32 +0800
+Subject: [PATCH] utils: del realpath from read_file
+
+Since the path in read_file is constructed by vmtop, there is no need
+to use realpath to modify the path. So, del realpath to release cpu time.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/utils.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/src/utils.c b/src/utils.c
+index 3cb1146..29de9c9 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -24,12 +24,11 @@ int read_file(char *buf, int bufsize, const char *path)
+ {
+     int fd;
+     int len;
+-    char mpath[PATH_MAX];
+ 
+-    if (strlen(path) > PATH_MAX - 1 || realpath(path, mpath) == NULL) {
++    if (strlen(path) > PATH_MAX - 1) {
+         return -1;
+     }
+-    fd = open(mpath, O_RDONLY, 0);
++    fd = open(path, O_RDONLY, 0);
+     if (fd == -1) {
+         return -1;
+     }
+-- 
+2.27.0
+

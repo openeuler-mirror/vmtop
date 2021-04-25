@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.1
-Release: 4
+Release: 5
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
@@ -30,6 +30,14 @@ Patch0019: codestyle-del-unused-var.patch
 Patch0020: bugfix-add-check-to-avoid-invalid-ptr-for-strcmp.patch
 Patch0021: input-add-invalid-opt-check-in-input.patch
 Patch0022: version-unified-with-release-version.patch
+Patch0023: input-change-wait-mechanism-for-input.patch
+Patch0024: vcpu_list-pre-malloc-vcpu-list-to-improve-performanc.patch
+Patch0025: performance-del-unnecessary-memcpy-and-memset.patch
+Patch0026: keyboard-change-wait-time-to-3s.patch
+Patch0027: performance-change-memset-location.patch
+Patch0028: proc-del-unused-items-getting-from-proc-stat-refresh.patch
+Patch0029: proc-del-loop-sscanf-for-proc-pid-stat-file.patch
+Patch0030: utils-del-realpath-from-read_file.patch
 
 Requires: libvirt, ncurses
 
@@ -70,6 +78,18 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Tue Mar 16 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+- vcpu_list: pre malloc vcpu list to improve performance
+- performance: del unnecessary memcpy and memset
+- keyboard: change wait time to 3s
+- performance: change memset location
+- proc: del unused items getting from proc stat refresh
+- proc: del loop sscanf for proc pid stat file
+- utils: del realpath from read_file
+
+* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+- input: change wait mechanism for input
+
 * Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
 - version: unified with release version
 

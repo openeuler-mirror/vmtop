@@ -1,0 +1,153 @@
+From da33b45b1945c2eae9cadb04b021179e2640670a Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Tue, 16 Mar 2021 13:55:36 +0800
+Subject: [PATCH] proc: del unused items getting from proc stat refresh
+
+Currently, vmtop gets a lot of items from /proc/pid/stat, and there
+are many unused data in these items, which will add a lot of cpu usage.
+So, del these item's getting process.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/proc.c | 28 +++++++++++++---------------
+ src/proc.h | 14 --------------
+ src/type.h | 16 +---------------
+ 3 files changed, 14 insertions(+), 44 deletions(-)
+
+diff --git a/src/proc.c b/src/proc.c
+index 0263c67..d33ede3 100644
+--- a/src/proc.c
++++ b/src/proc.c
+@@ -24,9 +24,9 @@ struct file_item proc_stab[] = {
+     {"%c", GF(state)},
+     {"%d", GF(ppid)},
+     {"%d", GF(pgrd)},
+-    {"%d", GF(session)},
+-    {"%d", GF(tty)},
+-    {"%d", GF(tpgid)},
++    {"%*d", NULL, NULL, NULL},
++    {"%*d", NULL, NULL, NULL},
++    {"%*d", NULL, NULL, NULL},
+     {"%lu", GF(flags)},
+     {"%lu", GF(min_flt)},
+     {"%lu", GF(cmin_flt)},
+@@ -36,30 +36,28 @@ struct file_item proc_stab[] = {
+     {"%llu", GDF(stime)},
+     {"%llu", GF(cutime)},
+     {"%llu", GF(cstime)},
+-    {"%ld", GF(priority)},
+-    {"%ld", GF(nice)},
++    {"%*ld", NULL, NULL, NULL},
++    {"%*ld", NULL, NULL, NULL},
+     {"%d", GF(nlwp)},
+     {"%ld", GF(alarm)},
+     {"%llu", GF(start_time)},
+     {"%lu", GF(vsize)},
+     {"%ld", GF(rss)},
+     {"%lu", GF(rss_rlim)},
+-    {"%lu", GF(start_code)},
+-    {"%lu", GF(end_code)},
+-    {"%lu", GF(start_stack)},
+-    {"%lu", GF(kstk_esp)},
+-    {"%lu", GF(kstk_eip)},
++    {"%*lu", NULL, NULL, NULL},
++    {"%*lu", NULL, NULL, NULL},
++    {"%*lu", NULL, NULL, NULL},
++    {"%*lu", NULL, NULL, NULL},
++    {"%*lu", NULL, NULL, NULL},
+     {"%*s", NULL, NULL, NULL},    /* discard signal */
+     {"%*s", NULL, NULL, NULL},    /* discard blocked */
+     {"%*s", NULL, NULL, NULL},    /* discard sigignore */
+     {"%*s", NULL, NULL, NULL},    /* discard sigcatch */
+-    {"%lu", GF(wchan)},
++    {"%*lu", NULL, NULL, NULL},
+     {"%*u", NULL, NULL, NULL},    /* dsicard nswap */
+     {"%*u", NULL, NULL, NULL},    /* discard cnswap */
+-    {"%d", GF(exit_signal)},
+-    {"%d", GF(processor)},
+-    {"%lu", GF(rtprio)},
+-    {"%lu", GF(sched)}
++    {"%*d", NULL, NULL, NULL},
++    {"%d", GF(processor)}
+ #undef GF
+ #undef GDF
+ };
+diff --git a/src/proc.h b/src/proc.h
+index a7fd443..0061ab1 100644
+--- a/src/proc.h
++++ b/src/proc.h
+@@ -16,9 +16,6 @@
+ GET_VALUE(state)
+ GET_VALUE(ppid)
+ GET_VALUE(pgrd)
+-GET_VALUE(session)
+-GET_VALUE(tty)
+-GET_VALUE(tpgid)
+ GET_VALUE(flags)
+ GET_VALUE(min_flt)
+ GET_VALUE(cmin_flt)
+@@ -28,24 +25,13 @@ GET_DELTA_FUN(utime)
+ GET_DELTA_FUN(stime)
+ GET_VALUE(cutime)
+ GET_VALUE(cstime)
+-GET_VALUE(priority)
+-GET_VALUE(nice)
+ GET_VALUE(nlwp)
+ GET_VALUE(alarm)
+ GET_VALUE(start_time)
+ GET_VALUE(vsize)
+ GET_VALUE(rss)
+ GET_VALUE(rss_rlim)
+-GET_VALUE(start_code)
+-GET_VALUE(end_code)
+-GET_VALUE(start_stack)
+-GET_VALUE(kstk_esp)
+-GET_VALUE(kstk_eip)
+-GET_VALUE(wchan)
+-GET_VALUE(exit_signal)
+ GET_VALUE(processor)
+-GET_VALUE(rtprio)
+-GET_VALUE(sched)
+ 
+ int get_proc_stat(struct domain *dom);
+ void refresh_delta_stat(struct domain *new, struct domain *old);
+diff --git a/src/type.h b/src/type.h
+index 3c08387..f5d148c 100644
+--- a/src/type.h
++++ b/src/type.h
+@@ -81,15 +81,9 @@ struct domain {
+     int
+         ppid,
+         pgrd,
+-        session,
+-        tty,
+-        tpgid,
+         nlwp,
+-        exit_signal,
+         processor;
+     long int
+-        priority,
+-        nice,
+         alarm,
+         rss;
+     unsigned int
+@@ -99,15 +93,7 @@ struct domain {
+         maj_flt,
+         cmaj_flt,
+         vsize,
+-        rss_rlim,
+-        start_code,
+-        end_code,
+-        start_stack,
+-        kstk_esp,
+-        kstk_eip,
+-        rtprio,
+-        sched,
+-        wchan;
++        rss_rlim;
+     u64
+         DFX_VALUE(utime),
+         DFX_VALUE(stime),
+-- 
+2.27.0
+

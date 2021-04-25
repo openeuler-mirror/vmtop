@@ -1,0 +1,43 @@
+From 49201ec920c30ca1096fcf258696cef33a11b056 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Sat, 27 Feb 2021 11:23:29 +0800
+Subject: [PATCH] input: change wait mechanism for input
+
+Currently, vmtop uses halfdelay to set waiting timeout of input.
+But, halfdelay's timeout can only be between 1~255, which limits vmtop's
+functioniing.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/vmtop.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/src/vmtop.c b/src/vmtop.c
+index f5fd4bd..cc2c141 100644
+--- a/src/vmtop.c
++++ b/src/vmtop.c
+@@ -489,6 +489,8 @@ int main(int argc, char *argv[])
+     if (scr_mode == TERM_MODE) {
+         print_scr = printw;
+         init_screen();
++        /* set getch wait for delay time */
++        wtimeout(stdscr, delay_time * 1000);
+     } else {
+         print_scr = printf;
+     }
+@@ -507,11 +509,7 @@ int main(int argc, char *argv[])
+         show_domains(&scr_cur);
+ 
+         if (scr_mode == TERM_MODE) {
+-            /*
+-             * set getch wait for delay time
+-             * if timeout return ERR and continue
+-             */
+-            halfdelay(delay_time * 10);
++            /* if timeout return ERR and continue */
+             key = getch();
+             if (key != ERR) {
+                 parse_keys(key);
+-- 
+2.27.0
+

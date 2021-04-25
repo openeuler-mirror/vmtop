@@ -1,0 +1,70 @@
+From cee7a38c7bbbb199f5f1a2e290e4a1b425026d35 Mon Sep 17 00:00:00 2001
+From: nocjj <1250062498@qq.com>
+Date: Fri, 12 Mar 2021 15:25:30 +0800
+Subject: [PATCH] performance: del unnecessary memcpy and memset
+
+There is no need to malloc a new mem to save old domain list data,
+and now->domains and pre->domains are pointers.
+So assign now->domains to pre->domains satisfies the requirement.
+
+Signed-off-by: nocjj <1250062498@qq.com>
+---
+ src/domain.c | 35 ++++++-----------------------------
+ 1 file changed, 6 insertions(+), 29 deletions(-)
+
+diff --git a/src/domain.c b/src/domain.c
+index f8dea48..b8c527a 100644
+--- a/src/domain.c
++++ b/src/domain.c
+@@ -63,33 +63,6 @@ struct domain *add_domains(struct domain_list *list)
+     return &(list->domains[list->num - 1]);
+ }
+ 
+-static void copy_domains(struct domain_list *now, struct domain_list *pre)
+-{
+-    clear_domains(pre);
+-    pre->num = now->num;
+-    if (pre->num <= 0) {
+-        return;
+-    }
+-    pre->domains = malloc(sizeof(struct domain) * pre->num);
+-    if (pre->domains == NULL) {
+-        pre->num = 0;
+-        return;
+-    }
+-    memcpy(pre->domains, now->domains, sizeof(struct domain) * pre->num);
+-    for (int i = 0; i < pre->num; i++) {
+-        if (pre->domains[i].nlwp <= 0) {
+-            continue;
+-        }
+-        pre->domains[i].threads = malloc(sizeof(struct domain) *
+-                                         pre->domains[i].nlwp);
+-        if (pre->domains[i].threads == NULL) {
+-            continue;
+-        }
+-        memcpy(pre->domains[i].threads, now->domains[i].threads,
+-               sizeof(struct domain) * pre->domains[i].nlwp);
+-    }
+-}
+-
+ static void pop_domains(struct domain_list *list)
+ {
+     list->num--;
+@@ -308,8 +281,12 @@ int refresh_domains(struct domain_list *now, struct domain_list *pre)
+ {
+     int num;
+ 
+-    copy_domains(now, pre);    /* save last data int pre */
+-    clear_domains(now);
++    /* save data in pre domain_list */
++    clear_domains(pre);
++    pre->num = now->num;
++    pre->domains = now->domains;
++    init_domains(now);
++
+     if (get_vcpu_list(&vcpu_list) < 0) {
+         return -1;
+     }
+-- 
+2.27.0
+
