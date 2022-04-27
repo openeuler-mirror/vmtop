@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.1
-Release: 5
+Release: 6
 Summary: A tool for collecting and analyzing data of virtual machine
 License: Mulan PSL V2
 Group: Application/System
@@ -38,6 +38,7 @@ Patch0027: performance-change-memset-location.patch
 Patch0028: proc-del-unused-items-getting-from-proc-stat-refresh.patch
 Patch0029: proc-del-loop-sscanf-for-proc-pid-stat-file.patch
 Patch0030: utils-del-realpath-from-read_file.patch
+Patch0031: add-README.zh.md.-update-README.md.patch
 
 Requires: libvirt, ncurses
 
@@ -78,6 +79,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Wed Apr 27 2022 yezengruan <yezengruan@huawei.com> - 1.1-6
+- add README.zh.md. update README.md
+
 * Tue Mar 16 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-5
 - vcpu_list: pre malloc vcpu list to improve performance
 - performance: del unnecessary memcpy and memset
