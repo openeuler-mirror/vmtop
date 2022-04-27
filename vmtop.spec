@@ -78,7 +78,7 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
-* Tue Mar 16 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+* Tue Mar 16 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-5
 - vcpu_list: pre malloc vcpu list to improve performance
 - performance: del unnecessary memcpy and memset
 - keyboard: change wait time to 3s
@@ -87,19 +87,19 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 - proc: del loop sscanf for proc pid stat file
 - utils: del realpath from read_file
 
-* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-4
 - input: change wait mechanism for input
 
-* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-4
 - version: unified with release version
 
-* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+* Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-3
 - input: add invalid opt check in input
 
-* Thu Jan 21 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+* Thu Jan 21 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-3
 - bugfix: add check to avoid invalid ptr for strcmp
 
-* Thu 14 Jan 2021 Jiajun Chen <1250062498@qq.com> -1.1-2
+* Thu 14 Jan 2021 Jiajun Chen <1250062498@qq.com> - 1.1-2
 - vcp_stat: add Max Scheduling Delay time items to display
 - args: add -p option
 - key: add page up/down key response
@@ -109,22 +109,22 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 - arch: add x86 kvm exits items
 - codestyle: del unused var
 
-* Wed Oct 28 2020 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+* Wed Oct 28 2020 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-1
 - display: modify filter display to support more display fields items
 
-* Wed Oct 28 2020 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
+* Wed Oct 28 2020 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-1
 - vcpu_stat: add remaining kvm exits items to display
 
-* Sat Oct 10 2020 Jiajun Chen <1250062498@qq.com> -1.1-0
+* Sat Oct 10 2020 Jiajun Chen <1250062498@qq.com> - 1.1-0
 - spec: modify source url
 
-* Sun Sep 27 2020 nocjj <1250062498@qq.com>
+* Sun Sep 27 2020 nocjj <1250062498@qq.com> - 1.0-4
 - vcpustat: modify vcpu info acquirement from debugfs
 - display: expand %CPU display
 - display: add limit to usage display
 - vmtop: simplify print_domain_field
 
-* Mon Sep 21 2020 Ruyi Chen <chenruyi2@huawei.com>
+* Mon Sep 21 2020 Ruyi Chen <chenruyi2@huawei.com> - 1.0-3
 - vmtop: add -h and -v
 
 * Mon Sep 21 2020 Jiajun Chen <1250062498@qq.com> - 1.0-2
