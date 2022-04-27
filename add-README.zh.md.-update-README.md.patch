@@ -1,0 +1,197 @@
+From 43a69408e9d04e3df94d456c2e5921e6fae82169 Mon Sep 17 00:00:00 2001
+From: gomico <smiku294@live.cn>
+Date: Tue, 26 Apr 2022 14:56:45 +0800
+Subject: [PATCH] add README.zh.md. update README.md.
+
+---
+ README.md    | 54 +++++++++++++++++++++++-------------
+ README.zh.md | 77 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 112 insertions(+), 19 deletions(-)
+ create mode 100644 README.zh.md
+
+diff --git a/README.md b/README.md
+index 8dcebb6..25f4c10 100644
+--- a/README.md
++++ b/README.md
+@@ -3,12 +3,15 @@
+ A tool for collecting and analyzing data of virtual machine.
+ 
+ ### Description
+-vmtop is a user-mode tool running on the host, which can dynamically view the resource usage of virtual machines in real time, include CPU usage, memory usage, vcpu kvm exits. It brings great convenience to virtualization problems and performance optimization, and is a pratical tool that intergrates multi-party info to monitor virtual machines.
++
++vmtop is a user-mode tool running on the host. You can use the tool to dynamically view the usage of virtual machine resources in real time, including CPU usage, memory usage, and vCPU KVM exits. vmtop brings great convenience to locating virtualization problems and performance optimization, and is a practical tool that integrates multi-party information for monitoring virtual machines.
+ 
+ ### Building
+-This project uses ncurses, ncurses-devel, autoconf, libvirt, libvirt-devel. Go to check them out if you do not have them locally installed.
++
++This project uses ncurses, ncurses-devel, autoconf, libvirt, libvirt-devel. Check them out if you do not have them locally installed.
+ 
+ The simple steps to make vmtop are:
++
+ ```sh
+ 1.  aclocal
+ 2.  autoconf
+@@ -17,45 +20,58 @@ The simple steps to make vmtop are:
+ 5.  ./configure
+ 6.  make
+ ```
+-And then you will find vmtop in the source code dictionary.
++
++Then you will find vmtop in the source code dictionary.
+ 
+ ### Introductions
+-#### usage
+-Run directly from the commandline.
++
++#### Usage
++
++Run directly from the command line mode.
++
+ ```sh
+ vmtop [-option]
+ ```
+-#### start option
+-- d: Set delay time between two display
+-- H: Show threads
+-- n: Set display times, default no limit
+-- b: Display in text mode to save result in file
+ 
+-#### shortcut key
+-- H: Open thread mode or close thread mode
+-- q: Quit from vmtop
+-- f: Show fields filter
++#### Start Options
++
++- -d: sets the refresh interval
++- -H: shows thread information
++- -n: sets the number of refresh times, which is not limited by default
++- -b: displays in text mode to save results to a file
++
++#### Shortcut Keys
++
++- H: displays or stops the thread information
++- q: quits vmtop
++- f: shows field filter
+ 
+ 
+ ### Contribution
+ 
+ #### Git
++
+ 1.  Fork the repository
+ 2.  Create Feat_xxx branch
+ 3.  Commit your code
+ 4.  Create Pull Request
+ 
+ #### Style
+-It is much better to be consistent with the exiting files. For new files:
+-- C: use kernel code style
+-- others: keep same with exiting files
++
++You are advised to keep new files consistent with the existing files. For new files:
++
++- in C: use kernel coding style
++- in other languages: keep them consistent with the existing files
+ 
+ #### Patches
+-Use 'git format-patch' to format patched and use 'git send-email' to send mail to [@openeuler](virt@openeuler.org) mailing list. And if it is a patch set, it is much better to use '--cover-letter' option when you format patches, so that we can understand what the pacthset does.
++
++Use 'git format-patch' to format patches and use 'git send-email' to send mail to [@openeuler](virt@openeuler.org) mailing list. For patch sets, the '--cover-letter' option is recommended when you format the patches. This helps us understand the features of the patches.
+ 
+ ### Maintainers
++
+ [@zhanghailiang](https://gitee.com/zhanghailiang_luckyh)
+ [@nocjj](https://gitee.com/nocjj)
+ 
+ ### License
+-[Mulan](License/LICENSE)
++
++[Mulan](License/LICENSE)
+\ No newline at end of file
+diff --git a/README.zh.md b/README.zh.md
+new file mode 100644
+index 0000000..f5a9193
+--- /dev/null
++++ b/README.zh.md
+@@ -0,0 +1,77 @@
++# vmtop
++
++用于收集和分析虚拟机数据的工具。
++
++### 介绍
++
++vmtop 是运行于主机端的用户模式工具，能够以动态方式实时查看虚拟机资源使用量，包括 CPU 和内存使用量，以及 vCPU KVM 退出事件。vmtop 为定位虚拟化问题和性能优化提供了极大的便利，是一种能集成多方信息以便监控虚拟机的实用工具。
++
++### 构建
++
++本项目使用 ncurses、ncurses-devel、autoconf、libvirt、libvirt-devel，请提前在本地安装好这些软件库。
++
++构建 vmtop 的步骤非常简单：
++
++```sh
++1.  aclocal
++2.  autoconf
++3.  autoheader
++4.  automake --add-missing
++5.  ./configure
++6.  make
++```
++
++之后就可以在源代码字典中找到 vmtop。
++
++### 使用说明
++
++#### 使用方法
++
++直接以命令行模式运行。
++
++```sh
++vmtop [-option]
++```
++
++#### 启动选项
++
++- -d: 设置显示刷新间隔
++- -H: 显示线程信息
++- -n: 设置显示刷新次数，默认不限制次数
++- -b: 以文字模式显示，以便将结果保存到文件
++
++#### 快捷键
++
++- H: 开启或关闭线程信息显示
++- q: 退出 vmtop
++- f: 显示字段过滤
++
++
++### 参与贡献
++
++#### Git
++
++1.  Fork 本仓库
++2.  新建 Feat_xxx 分支
++3.  提交代码
++4.  新建 Pull Request
++
++#### 代码风格
++
++新增文件的风格建议与已有文件保持一致。对于新增文件：
++
++- C 语言：使用内核编码风格
++- 其他语言：与已有文件保持一致
++
++#### 补丁
++
++使用 'git format-patch' 来格式化补丁，使用 'git send-email' 来向 [@openeuler](virt@openeuler.org) 邮件列表发送邮件。对于补丁集，建议在格式化补丁时添加 '--cover-letter' 选项，以便我们更好地了解补丁的功能特性。
++
++### 维护人员
++
++[@zhanghailiang](https://gitee.com/zhanghailiang_luckyh)
++[@nocjj](https://gitee.com/nocjj)
++
++### 授权
++
++[Mulan](License/LICENSE)
+\ No newline at end of file
+-- 
+2.27.0
+
