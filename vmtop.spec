@@ -103,7 +103,7 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 * Thu Jan 21 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com> - 1.1-3
 - bugfix: add check to avoid invalid ptr for strcmp
 
-* Thu 14 Jan 2021 Jiajun Chen <1250062498@qq.com> - 1.1-2
+* Thu Jan 14 2021 Jiajun Chen <1250062498@qq.com> - 1.1-2
 - vcp_stat: add Max Scheduling Delay time items to display
 - args: add -p option
 - key: add page up/down key response
