@@ -70,14 +70,14 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
-* Thu 22 Apr 2021 Jiajun Chen <1250062498@qq.com> -1.1-6
+* Thu Apr 22 2021 Jiajun Chen <1250062498@qq.com> -1.1-6
 - arch: add x86 kvm exits items
 
 * Sat Feb 27 2021 Huawei Technologies Co., Ltd <alex.chen@huawei.com>
 - version: unified with release version
 - input: add invalid opt check in input
 
-* Wed 27 Jan 2021 Jiajun Chen <1250062498@qq.com> -1.1-4
+* Wed Jan 27 2021 Jiajun Chen <1250062498@qq.com> -1.1-4
 - bugfix: add check to avoid invalid ptr for strcmp
 
 * Mon Dec 07 2020 Jiajun Chen <1250062498@qq.com> -1.1-3
