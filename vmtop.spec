@@ -1,8 +1,8 @@
 Name: vmtop
 Version: 1.1
-Release: 6
+Release: 7
 Summary: A tool for collecting and analyzing data of virtual machine
-License: Mulan PSL V2
+License: MulanPSL-2.0
 Group: Application/System
 URL: https://gitee.com/openeuler/vmtop
 
@@ -79,6 +79,9 @@ install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 %{_bindir}/vmtop
 
 %changelog
+* Sun Oct 09 2022 fushanqing <fushanqing@kylinos.cn> - 1.1-7
+- Unified license name specification
+
 * Wed Apr 27 2022 yezengruan <yezengruan@huawei.com> - 1.1-6
 - add README.zh.md. update README.md
 
