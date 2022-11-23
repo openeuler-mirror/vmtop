@@ -6,7 +6,7 @@ License: MulanPSL-2.0
 Group: Application/System
 URL: https://gitee.com/openeuler/vmtop
 
-Source:https://gitee.com/openeuler/vmtop/repository/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Source: https://gitee.com/openeuler/vmtop/releases/download/v%{version}/%{name}-%{version}.tar.gz
 
 Patch0001: bugfix-fix-ST-GUE-HYP-formula.patch
 Patch0002: display-expand-row-size-in-TEXT-mode.patch
