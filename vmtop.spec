@@ -1,6 +1,6 @@
 Name: vmtop
 Version: 1.1
-Release: 7
+Release: 8
 Summary: A tool for collecting and analyzing data of virtual machine
 License: MulanPSL-2.0
 Group: Application/System
@@ -39,6 +39,7 @@ Patch0028: proc-del-unused-items-getting-from-proc-stat-refresh.patch
 Patch0029: proc-del-loop-sscanf-for-proc-pid-stat-file.patch
 Patch0030: utils-del-realpath-from-read_file.patch
 Patch0031: add-README.zh.md.-update-README.md.patch
+Patch0032: split-cflags-and-ldflags.patch
 
 Requires: libvirt, ncurses
 
@@ -72,13 +73,16 @@ make
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/bin
-install -m 550 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
+install -m 750 vmtop ${RPM_BUILD_ROOT}/usr/bin/%{name}
 
 %files
 %license License/LICENSE
 %{_bindir}/vmtop
 
 %changelog
+* Wed May 10 2023 jammyjellyfish <jammyjellyfish255@outlook.com> - 1.1-8
+- split cflags and ldflags
+
 * Sun Oct 09 2022 fushanqing <fushanqing@kylinos.cn> - 1.1-7
 - Unified license name specification
 

@@ -1,0 +1,12 @@
+diff -up  a/configure.ac  b/configure.ac
+---  a/configure.ac	2023-05-10 17:05:04.469300926 +0800
++++  b/configure.ac	2023-05-10 17:14:45.487297380 +0800
+@@ -36,7 +36,7 @@ AC_ARG_ENABLE([debug],
+ 
+ AC_ARG_ENABLE([secure-build],
+   [AS_HELP_STRING([--enable-secure-build], [build project with secure flags])],
+-  [CFLAGS="${CFLAGS} -Wl,-z,relro,-z,now -fPIE -fPIC -pie -Werror -Wall -ftrapv -fstack-protector-all -D_FORTIFY_SOURCE=2 -O2"],[]
++  [CFLAGS="${CFLAGS} -fPIE -fPIC -Werror -Wall -ftrapv -fstack-protector-all -D_FORTIFY_SOURCE=2 -O2" LDFLAGS="${LDFLAGS} -Wl,-z,relro,-z,now -pie"],[]
+ )
+ 
+ AC_CONFIG_FILES([Makefile
