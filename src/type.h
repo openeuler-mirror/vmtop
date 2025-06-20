@@ -108,6 +108,7 @@ struct domain {
         DFX_VALUE(wfi_exit_stat),
         DFX_VALUE(mmio_exit_user),
         DFX_VALUE(mmio_exit_kernel),
+        DFX_VALUE(signal_exits),
         DFX_VALUE(exits),
         DFX_VALUE(fp_asimd_exit_stat),
         DFX_VALUE(irq_exit_stat),

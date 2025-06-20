@@ -28,6 +28,7 @@ struct file_item vcpu_stat_stab[] = {
     {"%llu", GDF(wfi_exit_stat)           },
     {"%llu", GDF(mmio_exit_user)          },
     {"%llu", GDF(mmio_exit_kernel)        },
+    {"%llu", GDF(signal_exits)            },
     {"%llu", GDF(exits)                   },
     {"%llu", GDF(fp_asimd_exit_stat)      },
     {"%llu", GDF(irq_exit_stat)           },
