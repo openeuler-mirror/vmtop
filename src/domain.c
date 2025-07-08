@@ -107,17 +107,17 @@ static int get_id_from_cgroup(pid_t pid)
     if (fp == NULL) {
         return id;
     }
-    /* parse id from "cpuset:/machine/qemu-$id" */
+    /* parse id from "cpuset:machine.slice/machine-qemu\x2d$id" */
     while (fgets(buf, BUF_SIZE - 1, fp)) {
         if (strstr(buf, "cpuset:") == NULL) {
             memset(buf, 0, BUF_SIZE);
             continue;
         }
-        tmp = strstr(buf, "qemu-");
+        tmp = strstr(buf, "machine-qemu\\x2d");
         if (tmp == NULL) {
             continue;
         }
-        tmp += strlen("qemu-");
+        tmp += strlen("machine-qemu\\x2d");
         id = atoi(tmp);
         break;
     }
