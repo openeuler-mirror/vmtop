@@ -13,6 +13,8 @@
 #ifndef SRC_UTILS_H
 #define SRC_UTILS_H
 
+#define TIME_STR_MAX 40
+
 int read_file(char *buf, int bufsize, const char *path);
 int get_time_str(char *buf, int bufsize);
 int str_to_int(const char *str);

@@ -19,6 +19,11 @@
 const char *summary_text = ""
     "vmtop - %s - %s\n"
     "Domains: %d running\n";
+const char *summary_total_bandwidth = ""
+    "MiB MBM:    %ld hosttotal\n";
+const char *summary_numa_bandwidth = ""
+    "Node%d:    %ld mbmtotal\n";
+
 const char *filter_help = ""
     "field filter - select which field to be showed\n"
     "Use up/down to navigate, use space to set whether chosen filed to be showed\n"
@@ -30,7 +35,8 @@ const char *help_text = ""
     "-h     :print this help message and exit\n"
     "-H     :displays VM thread information\n"
     "-n num :set the number of refresh times before automatic quit\n"
-    "-v     :show VMTOP version and exit\n";
+    "-v     :show VMTOP version and exit\n"
+    "-G     :display bandwidth information if resctrl mounted\n";
 const char *version_text = ""
     "vmtop-%s\n";
 
@@ -94,7 +100,23 @@ FID fields[] = {
     {"%ST",      FIELDS_DISPLAY, 8,  GDF(steal)                   },
     {"%GUE",     FIELDS_DISPLAY, 8,  GDF(gtime)                   },
     {"%HYP",     FIELDS_DISPLAY, 8,  NULL                         },
-    {"WAITmax",  FIELDS_HIDDEN,  9,  GF(st_max)                   }
+    {"WAITmax",  FIELDS_HIDDEN,  9,  GF(st_max)                   },
+    {"Node0",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node1",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node2",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node3",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node4",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node5",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node6",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node7",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node8",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node9",    FIELDS_HIDDEN,  10, NULL                         },
+    {"Node10",   FIELDS_HIDDEN,  10, NULL                         },
+    {"Node11",   FIELDS_HIDDEN,  10, NULL                         },
+    {"Node12",   FIELDS_HIDDEN,  10, NULL                         },
+    {"Node13",   FIELDS_HIDDEN,  10, NULL                         },
+    {"Node14",   FIELDS_HIDDEN,  10, NULL                         },
+    {"Node15",   FIELDS_HIDDEN,  10, NULL                         }
 #undef GDF
 #undef GF
 };

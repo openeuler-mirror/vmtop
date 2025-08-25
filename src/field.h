@@ -74,6 +74,22 @@ enum fields_type {
     FD_GUE,
     FD_HYP,
     FD_WAITMAX,
+    FD_NODE0,
+    FD_NODE1,
+    FD_NODE2,
+    FD_NODE3,
+    FD_NODE4,
+    FD_NODE5,
+    FD_NODE6,
+    FD_NODE7,
+    FD_NODE8,
+    FD_NODE9,
+    FD_NODE10,
+    FD_NODE11,
+    FD_NODE12,
+    FD_NODE13,
+    FD_NODE14,
+    FD_NODE15,
     FD_END
 };
 
@@ -89,6 +105,8 @@ extern const char *summary_text;
 extern const char *filter_help;
 extern const char *help_text;
 extern const char *version_text;
+extern const char *summary_total_bandwidth;
+extern const char *summary_numa_bandwidth;
 
 int get_show_field_num(void);
 #endif

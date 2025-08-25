@@ -14,13 +14,16 @@
 #define SRC_DOMAIN_H
 
 #include <unistd.h>
+#include <stdbool.h>
 #include "type.h"
 
 int refresh_domains(struct domain_list *now, struct domain_list *pre);
+void refresh_domains_bandwidth(struct domain_list *now, struct domain_list *pre);
 void init_domains(struct domain_list *list);
 void clear_domains(struct domain_list *list);
 struct domain *add_domains(struct domain_list *list);
 int get_task_num(struct domain_list *list);
 extern int monitor_id;
 extern struct domain_list vcpu_list;
+extern bool resctrl_enable;
 #endif
