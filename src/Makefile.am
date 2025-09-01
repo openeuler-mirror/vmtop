@@ -8,4 +8,6 @@ libdomain_a_SOURCES= \
 	vcpu_stat.c \
 	vcpu_stat.h \
 	utils.c \
-	utils.h
+	utils.h \
+	resctrl.c \
+	resctrl.h

@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <time.h>
+#include <sys/file.h>
 #include "utils.h"
 
 int read_file(char *buf, int bufsize, const char *path)

@@ -19,6 +19,7 @@
 #include "utils.h"
 #include "proc.h"
 #include "vcpu_stat.h"
+#include "resctrl.h"
 
 #define VAR_RUN_QEMU_PATH "/var/run/libvirt/qemu"
 #define PID_STRING_MAX 12
@@ -33,7 +34,12 @@ void init_domains(struct domain_list *list)
 {
     list->domains = NULL;
     list->num = 0;
+
+    for (int i = 0; i < MAX_NODE_NUM; i++) {
+        list->bandwidth[i] = 0;
+    }
 }
+
 void clear_domains(struct domain_list *list)
 {
     for (int i = 0; i < list->num; i++) {
@@ -304,6 +310,68 @@ int refresh_domains(struct domain_list *now, struct domain_list *pre)
     }
 
     return num;
+}
+
+static void calculate_all_bandwidth(struct domain_list *now,
+                                    int *sample_times_vms, int sample_times_host)
+{
+    unsigned int node_vms;
+    struct domain *dom;
+    int i, node;
+
+    for (node = 0; node < now->node_num; node++) {
+        if (sample_times_host > 0) {
+            now->bandwidth[node] /= sample_times_host;
+        }
+        node_vms = 0;
+
+        for (i = 0; i < now->num; i++) {
+            if (sample_times_vms[i] > 0) {
+                dom = &now->domains[i];
+                dom->ctl_bandwidth[node] /= sample_times_vms[i];
+                dom->bandwidth_updated_succ = 1;
+
+                now->bandwidth[node] += dom->ctl_bandwidth[node];
+                node_vms += dom->ctl_bandwidth[node];
+            }
+        }
+
+        /* fix if host bandwidth less tahn all VMs */
+        if (now->bandwidth[node] < node_vms) {
+            now->bandwidth[node] = node_vms;
+        }
+    }
+}
+
+void refresh_domains_bandwidth(struct domain_list *now, struct domain_list *pre)
+{
+    int sample_times_vms[MAX_VM_TASKS_NUM] = {0};
+    int r, sample_times_host = 0;
+    int id;
+
+    if (get_numa_num(&now->node_num) < 0) {
+        return;
+    }
+
+    for(r = 0; r < SAMPLE_TIMES_OUTER; r++) {
+        /* sample the ctrl_group data of VMs */
+        for (int i = 0; i < now->num; i++) {
+            if (get_vm_ctl_bandwidth(&now->domains[i], now->node_num) < 0) {
+                continue;
+            }
+            sample_times_vms[i]++;
+        }
+        /* sample the mon_group data of root */
+        if (get_root_mon_bandwidth(now->bandwidth, now->node_num) < 0) {
+            (void)usleep(SAMPLE_INTERVAL_US_OUTER);
+            continue;
+        }
+        sample_times_host++;
+        (void)usleep(SAMPLE_INTERVAL_US_OUTER);
+    }
+
+    /* calculate the average value */
+    calculate_all_bandwidth(now, sample_times_vms, sample_times_host);
 }
 
 int get_task_num(struct domain_list *list)

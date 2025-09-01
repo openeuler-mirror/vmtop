@@ -15,13 +15,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ncurses.h>
+#include <signal.h>
 #include "vmtop.h"
 #include "field.h"
 #include "domain.h"
 #include "utils.h"
 #include "../config.h"
+#include "resctrl.h"
 
-#define TIME_STR_MAX 40
 #define TERM_MODE 0
 #define TEXT_MODE 1
 #define FLUSH_SCR()  if (scr_mode == TERM_MODE) refresh(); else fflush(stdout)
@@ -38,6 +39,8 @@ int display_loop;
 int scr_mode;
 struct domain_list scr_cur;
 struct domain_list scr_pre;
+bool resctrl_param_enable;
+bool resctrl_enable;
 
 static int (*print_scr)(const char *fmt, ...);
 
@@ -72,7 +75,7 @@ static void init_parameter(void)
 static void parse_args(int argc, char *argv[])
 {
     int opt;
-    char *arg_ops = "hvHd:n:bp:";
+    char *arg_ops = "hvHd:n:bp:G";
     while ((opt = getopt(argc, argv, arg_ops)) != -1) {
         switch (opt) {
         case 'd': {
@@ -112,6 +115,10 @@ static void parse_args(int argc, char *argv[])
             }
             break;
         }
+        case 'G': {
+            resctrl_param_enable = true;
+            break;
+        }
         default:
             exit(1);    /* exit vmtop when args are invalid */
             break;
@@ -130,6 +137,19 @@ static void summary(void)
     }
 
     print_scr(summary_text, time_buf, PACKAGE_VERSION, scr_cur.num);
+
+    if (resctrl_enable) {
+        long int hosttotal = 0;
+        int i;
+
+        for (i = 0; i < scr_cur.node_num; i++) {
+            hosttotal += scr_cur.bandwidth[i];
+        }
+        print_scr(summary_total_bandwidth, hosttotal);
+        for (i = 0; i < scr_cur.node_num; i++) {
+            print_scr(summary_numa_bandwidth, i, scr_cur.bandwidth[i]);
+        }
+    }
     return;
 }
 
@@ -138,6 +158,11 @@ static void show_header(void)
     int showd_width = 0;
     int showd_field = 0;
     attron(A_REVERSE);
+
+    for (int i = FD_NODE0; i < FD_NODE0 + scr_cur.node_num; i++) {
+        fields[i].display_flag = resctrl_enable;
+    }
+
     for (int i = 0; i < FD_END; i++) {
         if (fields[i].display_flag == 1 &&
             (i == FD_DID || i == FD_VMNAME || ++showd_field >= begin_field)) {
@@ -273,6 +298,30 @@ static void print_domain_field(struct domain *dom, int field)
         u64 st_max = *(u64 *)(*fields[i].get_fun)(dom);
         /* show Max Scheduling Delay time in ms unit */
         print_scr("%*.3f", fields[i].align, st_max / 1000000.0f);
+        break;
+    }
+    case FD_NODE0:
+    case FD_NODE1:
+    case FD_NODE2:
+    case FD_NODE3:
+    case FD_NODE4:
+    case FD_NODE5:
+    case FD_NODE6:
+    case FD_NODE7:
+    case FD_NODE8:
+    case FD_NODE9:
+    case FD_NODE10:
+    case FD_NODE11:
+    case FD_NODE12:
+    case FD_NODE13:
+    case FD_NODE14:
+    case FD_NODE15: {
+        int index = i - FD_NODE0;
+        long int value = 0;
+        if (dom->bandwidth_updated_succ) {
+            value = dom->ctl_bandwidth[index];
+        }
+        print_scr("%*ld", fields[i].align, value);
         break;
     }
     default:
@@ -504,6 +553,9 @@ int main(int argc, char *argv[])
             move(0, 0);
         }
         refresh_domains(&scr_cur, &scr_pre);
+        if ((resctrl_enable = enable_resctrl() && resctrl_param_enable)) {
+            refresh_domains_bandwidth(&scr_cur, &scr_pre);
+        }
 
         /* frame make */
         summary();
@@ -528,5 +580,6 @@ int main(int argc, char *argv[])
     if (scr_mode == TERM_MODE) {
         endwin();    /* quit from curses mode */
     }
+
     return 0;
 }
