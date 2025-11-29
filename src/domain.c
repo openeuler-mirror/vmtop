@@ -260,6 +260,10 @@ static int get_qemu_id(struct domain_list *list)
             continue;
         }
         struct domain *dom = add_domains(list);
+        if (!dom) {
+            closedir(dir);
+            return -1;
+        }
         if (set_domain(dom, dirent->d_name) < 0) {
             pop_domains(list);
         }
