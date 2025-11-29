@@ -459,6 +459,9 @@ int main(int argc, char *argv[])
     int key;
 
     init_parameter();
+    if (!vcpu_list.domains) {
+        return -1;
+    }
     parse_args(argc, argv);
     if (scr_mode == TERM_MODE) {
         print_scr = printw;
